@@ -1,3 +1,30 @@
+#
+# This script reads a KiCad 6.x PCB file and generates OpenPnP packages,
+# parts and a board.xml file. This script should work with Python 3.8 or
+# Python 3.9. KiCad 5.x PCB files may work but are not guaranteed.
+#
+# This script should be run with OpenPnP *NOT RUNNING*. A non-standalone
+# version will be available for running within OpenPnP soon.
+#
+# For a trial run that does not modify OpenPnP be sure to add --read_only
+# on the command line.
+#
+# By default all parts will be created without nozzle assignments, to
+# assign one (or more) nozzles during part creation add --nozzle {name}
+# on the command line.
+#
+# If you receive a warning about the board having an origin of 0,0 the parts
+# placement offsets will very likely be inaccurate. To resolve this open your
+# PCB in pcbnew and assign an origin to one corner of your PCB.
+#
+# NOTE: When opening the board.xml in OpenPnP it has been observed that
+# part assignments may not be honored. If you observe this it is likely the
+# part name length being too long, you can add entries to the
+# footprint_to_package_mapping collection to shorten package names or specify
+# --use_value_for_part_id on the command line to shorten the part IDs even
+# further.
+#
+
 import os
 import sys
 import pcbnew
@@ -234,13 +261,12 @@ def update_parts_xml(parts, parts_xml_file, is_read_only):
             })
     if is_read_only:
         print('Read-only mode is enabled, skipping updates to parts.xml')
+    elif new_parts_added:
+        if sys.version_info >= (3, 9):
+            ET.indent(parts_root)
+        parts_xml.write(parts_xml_file)
     else:
-        if new_parts_added:
-            if sys.version_info >= (3, 9):
-                ET.indent(parts_root)
-            parts_xml.write(parts_xml_file)
-        else:
-            print('Found all required parts, no update to parts.xml required')
+        print('All required parts have been found, no update to parts.xml required')
 
 def update_packages_xml(packages, packages_xml_file, usable_nozzles, is_read_only):
     packages_xml = ET.parse(packages_xml_file)
@@ -323,15 +349,14 @@ def update_packages_xml(packages, packages_xml_file, usable_nozzles, is_read_onl
 
     if is_read_only:
         print('Read-only mode is enabled, skipping updates to packages.xml')
+    elif new_packages_added:
+        if sys.version_info >= (3, 9):
+            ET.indent(packages_root)
+        packages_xml.write(packages_xml_file)
     else:
-        if new_packages_added:
-            if sys.version_info >= (3, 9):
-                ET.indent(packages_root)
-            packages_xml.write(packages_xml_file)
-        else:
-            print('Found all required packages, no update to packages.xml required')
+        print('All required packages have been found, no update to packages.xml required')
 
-def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value_for_part_id, force_upper):
+def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value_for_part_id, use_mixedcase):
     print('Board contains {} footprints'.format(len(board.GetFootprints())))
     packages = {}
     parts = {}
@@ -367,7 +392,7 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
             if use_value_for_part_id:
                 placement_name = fp_value
 
-            if force_upper:
+            if not use_mixedcase:
                 placement_name = placement_name.upper()
                 fp_name = fp_name.upper()
             
@@ -449,12 +474,12 @@ parser.add_argument('--board', type=str, help='KiCad PCB to parse, foo.kicad_pcb
 parser.add_argument('--board_xml', type=str, help='OpenPnP board.xml to generate', required=True)
 parser.add_argument('--packages', type=str, help='Location of packages.xml', default='{}/.openpnp2/packages.xml'.format(Path.home()))
 parser.add_argument('--parts', type=str, help='Location of parts.xml', default='{}/.openpnp2/parts.xml'.format(Path.home()))
-parser.add_argument('--force_upper', help='Force part name and package name to upper case', default=True, action='store_true')
-parser.add_argument('--use_value_for_part_id', help='Use Value from KiCad footprint as part ID', default=False, action='store_true')
-parser.add_argument('--nozzle', type=str, help='Default nozzle(s) to assign as compatible', action='append')
+parser.add_argument('--use_mixedcase', help='Enabling this option will generate package names and part names using the values as-is from the PCB. When not enabled all names will be forced to upper case.', default=False, action='store_true')
+parser.add_argument('--use_value_for_part_id', help='Enabling this option will use component Value from the KiCad PCB footprint as the OpenPnP part ID', default=False, action='store_true')
+parser.add_argument('--nozzle', type=str, help='Default nozzle(s) to assign as compatible, can be specified more than once', action='append')
 parser.add_argument('--ignore_top', help='Exclude pads on the F_Cu (top) layer', default=False, action='store_true')
 parser.add_argument('--ignore_bottom', help='Exclude pads on the B_Cu (bottom) layer', default=False, action='store_true')
-parser.add_argument('--read_only', help='Rename hand-solder pads to normal pads', default=False, action='store_true')
+parser.add_argument('--read_only', help='Enable this option to disable updating any OpenPnP files, board.xml will still be generated.', default=False, action='store_true')
 args = parser.parse_args()
 
 if not os.path.exists(args.board):
@@ -481,7 +506,12 @@ board_origin_x = pcbnew.Iu2Millimeter(board_origin.x)
 board_origin_y = pcbnew.Iu2Millimeter(board_origin.y)
 print('Detected board is {}x{}mm (origin:{},{})'.format(board_width, board_height, board_origin_x, board_origin_y))
 
-packages, parts, placements = identity_used_packages_and_parts(board, args.ignore_top, args.ignore_bottom, args.use_value_for_part_id, args.force_upper)
+if args.use_mixedcase:
+    print('Packages and parts may use mixed-case names')
+else:
+    print('Packages and parts will be forced to upper case')
+
+packages, parts, placements = identity_used_packages_and_parts(board, args.ignore_top, args.ignore_bottom, args.use_value_for_part_id, args.use_mixedcase)
 update_packages_xml(packages, args.packages, args.nozzle, args.read_only)
 update_parts_xml(parts, args.parts, args.read_only)
 create_board_xml(placements, board_origin_x, board_origin_y, board_width, board_height, args.board, args.board_xml)
