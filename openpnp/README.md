@@ -7,6 +7,6 @@ Files in this directory should be copied into your $HOME/.openpnp2/Scripts direc
 This script will create multiple slotted feeders which can be configured once and
 used for multiple parts simply by updating the feeder assignment for the slot.
 
-## scan-feeder-slots.py
+## scan-feeders-for-part-labels.py
 
 This script will scan all slotted feeders and attempt to assign feeders to the slots.
