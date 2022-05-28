@@ -15,7 +15,12 @@ def get_current_directory():
 # Downloads a QR code image using the Google Charts API
 def download(data, size):
     url = 'https://chart.googleapis.com/chart?cht=qr&chs=' + str(size) + 'x' + str(size) + '&chl=' + data
-    labelPath = os.path.join(get_current_directory(), "labels", data + ".png")
+    
+    currentDirectory = get_current_directory()
+    labelsDirectory = os.path.join(currentDirectory, "labels")
+    if not os.path.exists(labelsDirectory):
+        os.makedirs(labelsDirectory)
+    labelPath = os.path.join(labelsDirectory, data + ".png")
     
     img_data = requests.get(url).content
     with open(labelPath, 'wb') as handler:
