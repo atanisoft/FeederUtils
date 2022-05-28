@@ -1,4 +1,8 @@
 #
+# SPDX-FileCopyrightText: 2022 Mike Dunston (atanisoft)
+#
+# SPDX-License-Identifier: MIT
+#
 # This script reads a KiCad 6.x PCB file and generates OpenPnP packages,
 # parts and a board.xml file. This script should work with Python 3.8 or
 # Python 3.9. KiCad 5.x PCB files may work but are not guaranteed.

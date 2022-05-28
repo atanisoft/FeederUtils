@@ -1,3 +1,9 @@
+#
+# SPDX-FileCopyrightText: 2022 CurlyTaleGamesLLC
+#
+# SPDX-License-Identifier: MIT
+#
+
 import os
 import json
 

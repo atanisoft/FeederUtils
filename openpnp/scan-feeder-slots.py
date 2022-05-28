@@ -1,3 +1,9 @@
+#
+# SPDX-FileCopyrightText: 2022 Mike Dunston (atanisoft)
+#
+# SPDX-License-Identifier: MIT
+#
+
 from org.openpnp.machine.reference.feeder import ReferenceSlotAutoFeeder
 from org.openpnp.util import VisionUtils
 
