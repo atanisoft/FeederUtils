@@ -72,13 +72,13 @@ def create_page(pageNumber, labelList, startIndex = 0):
     currentDirectory = get_current_directory()
     labelsDirectory = os.path.join(currentDirectory, "labels")
 
-    exportFile =  os.path.join(currentDirectory, "print_labels_" + str(pageNumber) + ".png")
+    exportFile =  os.path.join(currentDirectory, "print_labels_" + str(pageNumber + 1) + ".png")
     img = Image.new('RGB', (pageWidth, pageHeight), color = 'white')
 
     labelMapPath =  os.path.join(currentDirectory, "label_map.txt")
     labelMap = open(labelMapPath, "a")
     labelMap.write("PAGE = " + str(pageNumber + 1) + "\n")
-    labelMap.write("X , Y = PART ID\n")
+    labelMap.write("X , Y = PART ID\n\n")
 
     labelIndex = 0
     rowIndex = 0
@@ -104,6 +104,7 @@ def create_page(pageNumber, labelList, startIndex = 0):
         if rowIndex > columns - 1:
             rowIndex = 0
             columnIndex += 1
+            labelMap.write("\n")
 
     img.save(exportFile)
     labelMap.write("\n")
