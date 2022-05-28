@@ -1,3 +1,4 @@
+__pycache__
 label_maker/__pycache__
 label_maker/labels/*
 label_maker/label_map.txt

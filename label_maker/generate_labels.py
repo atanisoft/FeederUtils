@@ -77,6 +77,9 @@ def create_page(pageNumber, labelList, startIndex = 0):
     currentDirectory = get_current_directory()
     labelsDirectory = os.path.join(currentDirectory, "labels")
 
+    if not os.path.exists(labelsDirectory):
+        os.makedirs(labelsDirectory)
+
     exportFile =  os.path.join(currentDirectory, "print_labels_" + str(pageNumber + 1) + ".png")
     img = Image.new('RGB', (pageWidth, pageHeight), color = 'white')
 
