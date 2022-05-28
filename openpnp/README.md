@@ -1,6 +1,6 @@
 # OpenPnP Scripts
 
-Files in this directory should be copied into your $HOME/.openpnp/Scripts directory.
+Files in this directory should be copied into your $HOME/.openpnp2/Scripts directory.
 
 ## create-feeders.py
 

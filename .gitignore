@@ -1,4 +1,4 @@
-__pycache__
-labels/*
-label_map.txt
-print_labels_*
+label_maker/__pycache__
+label_maker/labels/*
+label_maker/label_map.txt
+label_maker/print_labels_*
