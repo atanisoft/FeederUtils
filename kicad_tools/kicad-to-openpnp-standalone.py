@@ -61,7 +61,8 @@ footprint_to_package_mapping = {
     'C_1206_3216Metric' : 'C_1206',
     'C_1210_3225Metric' : 'C_1210',
     'CP_Elec_5x5.3' : 'C_5X5.3MM',
-    'CP_ELEC_6.3X7.7' : 'C_6.3X7.7',
+    'CP_Elec_6.3x5.4' : 'C_6.3X5.4',
+    'CP_Elec_6.3x7.7' : 'C_6.3X7.7',
 
     'R_0402_1005Metric_Pad0.72x0.64mm_HandSolder' : 'R_0402',
     'R_0603_1608Metric_Pad0.98x0.95mm_HandSolder' : 'R_0603',
@@ -73,7 +74,9 @@ footprint_to_package_mapping = {
     'R_0805_2012Metric' : 'R_0805',
     'R_1206_3216Metric' : 'R_1206',
     'R_1210_3225Metric' : 'R_1210',
+    'R_2512_6332Metric' : 'R_2512',
     'R_Array_Concave_4x0402' : 'R_4X0402',
+    'R_Shunt_Vishay_WSKW0612' : 'R_SHUNT_WSKW0612',
 
     'QFN-28-1EP_6x6mm_P0.65mm_EP4.25x4.25mm' : 'QFN28_6x6MM',
 
@@ -81,24 +84,30 @@ footprint_to_package_mapping = {
     'SOT-353_SC-70-5' : 'SOT353',
 
     'L_Taiyo-Yuden_NR-40xx_HandSoldering' : 'L_TAIYO_40XX',
+    'L_Taiyo-Yuden_NR-40xx' : 'L_TAIYO_40XX',
     'L_0603_1608Metric_Pad1.05x0.95mm_HandSolder' : 'L_0603',
     'L_0603_1608Metric' : 'L_0603',
 
     'TSSOP-28_4.4x9.7mm_P0.65mm' : 'TSSOP28_4.4X9.7MM',
+    'TSSOP-14_4.4x5mm_P0.65mm' : 'TSSOP14_4.4X5MM',
+    'HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask3x3mm_ThermalVias' : 'HTSSOP16_4.4X5MM',
+    'HTSSOP-24-1EP_4.4x7.8mm_P0.65mm_EP3.4x7.8mm_Mask2.4x4.68mm_ThermalVias' : 'HTSSOP24_4.4X7.8MM',
+    'SOIC-8_3.9x4.9mm_P1.27mm' : 'SOIC8_3.9X4.9MM',
 
     'TO-252-2' : 'TO252_2',
     'TSOT-23-6' : 'TSOT23_6',
     'D_SMA_Handsoldering' : 'D_SMA',
-
-    'HTSSOP-16-1EP_4.4X5MM_P0.65MM_EP3.4X5MM_MASK3X3MM_THERMALVIAS' : 'HTSSOP16_4.4X5MM',
-    'SOIC-8_3.9x4.9mm_P1.27mm' : 'SOIC8_3.9X4.9MM',
 
     'LED_0603_1608Metric_Pad1.05x0.95mm_HandSolder' : 'LED_0603',
     'LED_0603_1608Metric' : 'LED_0603',
     'LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder' : 'LED_0805',
     'LED_0805_2012Metric' : 'LED_0805',
 
-    'LED_SK6805_PLCC4_2.4X2.7MM_P1.3MM_RGB' : 'LED_2.4X2.7MM',
+    'LED_SK6805_PLCC4_2.4x2.7mm_P1.3mm' : 'LED_2.4X2.7MM',
+
+    'Fuse_1812_4532Metric' : 'FUSE_1812',
+
+    'SW_SPST_EVQPE1' : 'SW_EVQPE1'
 }
 
 # Default height to assign to parts based on the package.
@@ -162,12 +171,20 @@ package_size_mapping = {
         'h' : '2.5',
         'w' : '3.2',
     },
+    'R_2512' : {
+        'h' : '3.2',
+        'w' : '6.3',
+    },
     'SOIC8_3.9X4.9MM' : {
         'h' : '4.9',
         'w' : '3.9',
     },
     'HTSSOP16_4.4X5MM' : {
         'h' : '5.0',
+        'w' : '4.4',
+    },
+    'HTSSOP24_4.4X7.8MM' : {
+        'h' : '7.8',
         'w' : '4.4',
     },
     'TSSOP28_4.4X9.7MM' : {
@@ -186,6 +203,10 @@ package_size_mapping = {
         'h' : '7.7',
         'w' : '6.3',
     },
+    'C_6.3X5.4' : {
+        'h' : '5.4',
+        'w' : '6.3',
+    },
     'LED_0603' : {
         'h' : '0.8',
         'w' : '1.6',
@@ -197,6 +218,10 @@ package_size_mapping = {
     'LED_2.4X2.7MM' : {
         'h' : '2.7',
         'w' : '2.4',
+    },
+    'FUSE_1812' : {
+        'h' : '3.2',
+        'w' : '4.5'
     }
 }
 
@@ -301,8 +326,9 @@ def update_packages_xml(packages, packages_xml_file, usable_nozzles, is_read_onl
             # nested element:
             # <compatible-nozzle-tip-ids class="java.util.ArrayList"></compatible-nozzle-tip-ids>
             nozzles = ET.SubElement(package_elem, 'compatible-nozzle-tip-ids', {'class' : 'java.util.ArrayList'})
-            for nozzle in usable_nozzles:
-                ET.SubElement(nozzles, 'string').text = nozzle
+            if usable_nozzles:
+                for nozzle in usable_nozzles:
+                    ET.SubElement(nozzles, 'string').text = nozzle
             for pad in packages[package]:
                 values = packages[package][pad]
                 # <pad name="1" x="0.0" y="0.0" width="0.5" height="0.5" rotation="0.0" roundness="100.0"/>
@@ -369,7 +395,13 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
     # Process all footprints that are found on the board
     for footprint in board.GetFootprints():
         # if the footprint is an SMD footprint we should process it further.
-        if 'SMD' in footprint.GetTypeName():
+        includeFootprint = False
+        for pad in footprint.Pads():
+            if pad.GetAttribute() == pcbnew.PAD_ATTRIB_SMD:
+                includeFootprint = True
+        if includeFootprint:
+            if 'SMD' not in footprint.GetTypeName():
+                print('WARNING: KiCad lists \'{}\' as not SMD but includes SMD pads!'.format(footprint.GetReference()))
             if ignore_top and footprint.GetLayer() == pcbnew.F_Cu:
                 continue
             elif ignore_bottom and footprint.GetLayer() == pcbnew.B_Cu:
