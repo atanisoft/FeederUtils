@@ -1,0 +1,11 @@
+FIDUCIAL-HOME
+Fiducial_1mm_Mask2mm-Fiducial
+SOT-23-2N7002K
+R_0805_2012Metric-10K
+C_0805_2012Metric_Pad1.15x1.40mm_HandSolder-0.1uf
+C_0805_2012Metric_Pad1.15x1.40mm_HandSolder-10uf
+LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder-LED
+Fiducial_0.75mm_Mask1.5mm-Fiducial
+SOT-23-2N7002
+R_0805_2012Metric-2.2k
+R_0805_2012Metric-22

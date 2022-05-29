@@ -1,11 +1,14 @@
 {
     "pageWidth":2550,
     "pageHeight":3300,
+    "marginX":143,
+    "marginY":133,
     "rows":4,
     "columns":4,
     "labelSize":153,
-    "offsetX":143,
-    "offsetY":133,
+    "labelBorder":0,
     "spacingX":200,
-    "spacingY":100
+    "spacingY":100,
+    "groupSize":2,
+    "groupSpacing":0
 }
