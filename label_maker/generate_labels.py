@@ -9,21 +9,18 @@ import os
 import math 
 from PIL import Image
 
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-c', '--config', type=str, help='Label configuration file', default='default.json')
+parser.add_argument('-i', '--index', type=int, help='Starting index on the label sheet', default=0)
+parser.add_argument('-p', '--parts', type=str, help='Text file with each part on a new line', default='')
+args = parser.parse_args()
+
+
 import download_qr
 import config
 
-partList = [
-    "FIDUCIAL-HOME",
-    "Fiducial_1mm_Mask2mm-Fiducial",
-    "SOT-23-2N7002K",
-    "R_0805_2012Metric-10K",
-    "C_0805_2012Metric_Pad1.15x1.40mm_HandSolder-0.1uf",
-    "C_0805_2012Metric_Pad1.15x1.40mm_HandSolder-10uf",
-    "LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder-LED",
-    "Fiducial_0.75mm_Mask1.5mm-Fiducial",
-    "SOT-23-2N7002",
-    "R_0805_2012Metric-2.2k",
-    "R_0805_2012Metric-22"]
 
 def get_current_directory():
     script = os.path.realpath(__file__)
@@ -65,14 +62,17 @@ def create_page(pageNumber, labelList, startIndex = 0):
     # size of QR code
     labelSize = config.data['labelSize']
     
-    # offset distance from top left corner
-    offsetX = config.data['offsetX']
-    offsetY = config.data['offsetY']
+    # margin distance from top left corner
+    marginX = config.data['marginX']
+    marginY = config.data['marginY']
 
     # distance between top left corner of each label
     spacingY = config.data['spacingY']
     spacingX = config.data['spacingX']
 
+    # optional parameter to group qr codes so multiple can be printed on a single label
+    groupSize = config.data['groupSize']
+    groupSpacing = config.data['groupSpacing']
     
     currentDirectory = get_current_directory()
     labelsDirectory = os.path.join(currentDirectory, "labels")
@@ -91,24 +91,28 @@ def create_page(pageNumber, labelList, startIndex = 0):
     labelIndex = 0
     rowIndex = 0
     columnIndex = 0
+    groupIndex = 0
     
     for label in labelList:
         if label != ' ':
+            groupIndex = rowIndex % groupSize
+            groupNumber = math.floor(rowIndex / groupSize)
+           
             # Place QR code on sheet of paper
-            imageSpacingX = offsetX + (rowIndex * labelSize) + (rowIndex * spacingX)
-            imageSpacingY = offsetY + (columnIndex * labelSize) + (columnIndex * spacingY)
+            imageSpacingX = marginX + (rowIndex * labelSize) + (groupNumber * spacingX) + (groupIndex * groupSpacing)
+            imageSpacingY = marginY + (columnIndex * labelSize) + (columnIndex * spacingY)
             new_image = Image.open(label)
             img.paste(new_image, (imageSpacingX, imageSpacingY))
 
             # Write QR code label to label map file
             filename = os.path.basename(label)
             partID = filename[:len(filename) - 4]
-            # labelMap.write(str(rowIndex + 1) + "," + str(columnIndex + 1) + " = " + partID +"\n")
             labelMap.write(f'{(rowIndex + 1):02}' + "," + f'{(columnIndex + 1):02}' + " = " + partID +"\n")
 
         # Increment label position indexes to next position
         labelIndex += 1
         rowIndex += 1
+        
         if rowIndex > columns - 1:
             rowIndex = 0
             columnIndex += 1
@@ -119,13 +123,13 @@ def create_page(pageNumber, labelList, startIndex = 0):
     labelMap.close()
 
 
-def generate(startIndex = 0, templateFile = "default.json"):
+def generate(startIndex = 0, templateFile = "default.json", partList = []):
 
     config.load(templateFile)
 
     for part in partList:
         if not "FIDUCIAL" in part.upper():
-            download_qr.download(part, config.data['labelSize'])
+            download_qr.download(part, config.data['labelSize'], config.data['labelBorder'])
 
     # delete old label pages
     delete_pages()
@@ -163,12 +167,11 @@ def generate(startIndex = 0, templateFile = "default.json"):
 
 def main():
     print("Generating QR Code Part ID Sheet")
-    # print(sys.argv)
 
-    startIndex = sys.argv[1] if len(sys.argv) > 1 else 0
-    templateFile = sys.argv[2] if len(sys.argv) > 2 else "default.json"
+    with open(args.parts, 'r') as file:
+        partList = file.read().splitlines()
 
-    generate(startIndex, templateFile)
+    generate(args.index, args.config, partList)
 
 if __name__ == "__main__":
     main()
