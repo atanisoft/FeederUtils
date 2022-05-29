@@ -19,7 +19,10 @@ modify the [OpenPnP](www.openpnp.org) parts and packages definitions.
 
 Complete usage is below:
 ```
-usage: kicad-to-openpnp-standalone.py [-h] --board BOARD --board_xml BOARD_XML [--packages PACKAGES] [--parts PARTS] [--use_mixedcase] [--use_value_for_part_id] [--nozzle NOZZLE] [--ignore_top] [--ignore_bottom] [--read_only]
+usage: kicad-to-openpnp-standalone.py [-h] --board BOARD --board_xml BOARD_XML [--packages PACKAGES]
+                                      [--parts PARTS] [--use_mixedcase] [--use_value_for_part_id]
+                                      [--nozzle NOZZLE] [--ignore_top] [--ignore_bottom] [--read_only]
+                                      [--parts_json PARTS_JSON]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -35,4 +38,39 @@ optional arguments:
   --ignore_top          Exclude pads on the F_Cu (top) layer
   --ignore_bottom       Exclude pads on the B_Cu (bottom) layer
   --read_only           Enable this option to disable updating any OpenPnP files, board.xml will still be generated.
+  --parts_json PARTS_JSON
+                        Location of parts.json
 ```
+
+### Packages and Parts mappping
+
+[KiCad](www.kicad.org) uses very long package names as part of the PCB file. This
+is unfortunately not ideal for usage in [OpenPnP](www.openpnp.org). Additionally,
+package size data is not always available from the package name. To combat these
+problems `parts.json` has been created with a number of packages. Additional types
+can be easily added to the file.
+
+#### parts.json entry format
+
+The parts.json file contains a handful of fields for each component that should be
+renamed as part of the import process. A sample entry is below:
+
+```
+  {
+      "id": "R_2512",
+      "alias": [
+          "R_2512_6332Metric_Pad1.40x3.35mm_HandSolder",
+          "R_2512_6332Metric"
+      ],
+      "x_mm": 3.2,
+      "y_mm": 6.3,
+      "z_mm": 0.55
+  },
+```
+
+The only fields which are required to be present are `id` and `alias`. The `x_mm`,
+`y_mm` and `z_mm` fields can be omitted if these are not known or available, when
+not specified these will show up as 0mm in [OpenPnP](www.openpnp.org).
+
+Note: The `alias` field can either be a single entry or an array of entries as
+seen above.

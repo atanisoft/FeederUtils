@@ -21,12 +21,14 @@
 # placement offsets will very likely be inaccurate. To resolve this open your
 # PCB in pcbnew and assign an origin to one corner of your PCB.
 #
-# NOTE: When opening the board.xml in OpenPnP it has been observed that
+# NOTE: When opening the board.xml in OpenPnP it has been observed that some
 # part assignments may not be honored. If you observe this it is likely the
-# part name length being too long, you can add entries to the
-# footprint_to_package_mapping collection to shorten package names or specify
-# --use_value_for_part_id on the command line to shorten the part IDs even
-# further.
+# part name length being too long, you can add entries to parts.json to
+# shorten package names or specify --use_value_for_part_id on the command
+# line to shorten the part IDs even further.
+#
+# NOTE: If parts.json does not contain size data for a given part it will be
+# defaulted to 0mm in OpenPnP.
 #
 
 import os
@@ -35,195 +37,22 @@ import pcbnew
 import argparse
 from pathlib import Path
 import xml.etree.ElementTree as ET
+import json
 
-# Mapping of KiCad footprint names to OpenPnP Package names.
+# Internal lookup table for mapping KiCad footprint names to OpenPnP Packages.
 #
-# This value is also used as a prefix for parts.xml entries, such as: "C_0603_100NF"
-footprint_to_package_mapping = {
-    'Fiducial_0.5mm_Mask1mm' : 'FIDUCIAL_0.5X1',
-    'Fiducial_0.5mm_Mask1.5mm' : 'FIDUCIAL_0.5X1.5',
-    'Fiducial_0.75mm_Mask1.5mm' : 'FIDUCIAL_0.75X1.5',
-    'Fiducial_0.75mm_Mask2.25mm' : 'FIDUCIAL_0.75X2.25',
-    'Fiducial_1mm_Mask2mm' : 'FIDUCIAL_1X2',
-    'Fiducial_1mm_Mask3mm' : 'FIDUCIAL_1X3',
-    'Fiducial_1mm_Mask4.5mm' : 'FIDUCIAL_1X4.5',
-    'Fiducial_1.5mm_Mask2mm' : 'FIDUCIAL_1.5X2',
+# NOTE: This is updated by loading parts.json at startup.
+footprint_to_package_mapping = {}
 
-    'C_0402_1005Metric_Pad0.74x0.62mm_HandSolder' : 'C_0402',
-    'C_0603_1608Metric_Pad1.08x0.95mm_HandSolder' : 'C_0603',
-    'C_0805_2012Metric_Pad1.15x1.40mm_HandSolder' : 'C_0805',
-    'C_0805_2012Metric_Pad1.18x1.45mm_HandSolder' : 'C_0805',
-    'C_1206_3216Metric_Pad1.33x1.80mm_HandSolder' : 'C_1206',
-    'C_1210_3225Metric_Pad1.33x2.70mm_HandSolder' : 'C_1210',
-    'C_0402_1005Metric' : 'C_0402',
-    'C_0603_1608Metric' : 'C_0603',
-    'C_0805_2012Metric' : 'C_0805',
-    'C_1206_3216Metric' : 'C_1206',
-    'C_1210_3225Metric' : 'C_1210',
-    'CP_Elec_5x5.3' : 'C_5X5.3MM',
-    'CP_Elec_6.3x5.4' : 'C_6.3X5.4',
-    'CP_Elec_6.3x7.7' : 'C_6.3X7.7',
-
-    'R_0402_1005Metric_Pad0.72x0.64mm_HandSolder' : 'R_0402',
-    'R_0603_1608Metric_Pad0.98x0.95mm_HandSolder' : 'R_0603',
-    'R_0805_2012Metric_Pad1.20x1.40mm_HandSolder' : 'R_0805',
-    'R_1206_3216Metric_Pad1.30x1.75mm_HandSolder' : 'R_1206',
-    'R_1210_3225Metric_Pad1.30x2.65mm_HandSolder' : 'R_1210',
-    'R_0402_1005Metric' : 'R_0402',
-    'R_0603_1608Metric' : 'R_0603',
-    'R_0805_2012Metric' : 'R_0805',
-    'R_1206_3216Metric' : 'R_1206',
-    'R_1210_3225Metric' : 'R_1210',
-    'R_2512_6332Metric' : 'R_2512',
-    'R_Array_Concave_4x0402' : 'R_4X0402',
-    'R_Shunt_Vishay_WSKW0612' : 'R_SHUNT_WSKW0612',
-
-    'QFN-28-1EP_6x6mm_P0.65mm_EP4.25x4.25mm' : 'QFN28_6x6MM',
-
-    'SOT-223-3_TabPin2' : 'SOT223',
-    'SOT-353_SC-70-5' : 'SOT353',
-
-    'L_Taiyo-Yuden_NR-40xx_HandSoldering' : 'L_TAIYO_40XX',
-    'L_Taiyo-Yuden_NR-40xx' : 'L_TAIYO_40XX',
-    'L_0603_1608Metric_Pad1.05x0.95mm_HandSolder' : 'L_0603',
-    'L_0603_1608Metric' : 'L_0603',
-
-    'TSSOP-28_4.4x9.7mm_P0.65mm' : 'TSSOP28_4.4X9.7MM',
-    'TSSOP-14_4.4x5mm_P0.65mm' : 'TSSOP14_4.4X5MM',
-    'HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask3x3mm_ThermalVias' : 'HTSSOP16_4.4X5MM',
-    'HTSSOP-24-1EP_4.4x7.8mm_P0.65mm_EP3.4x7.8mm_Mask2.4x4.68mm_ThermalVias' : 'HTSSOP24_4.4X7.8MM',
-    'SOIC-8_3.9x4.9mm_P1.27mm' : 'SOIC8_3.9X4.9MM',
-
-    'TO-252-2' : 'TO252_2',
-    'TSOT-23-6' : 'TSOT23_6',
-    'D_SMA_Handsoldering' : 'D_SMA',
-
-    'LED_0603_1608Metric_Pad1.05x0.95mm_HandSolder' : 'LED_0603',
-    'LED_0603_1608Metric' : 'LED_0603',
-    'LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder' : 'LED_0805',
-    'LED_0805_2012Metric' : 'LED_0805',
-
-    'LED_SK6805_PLCC4_2.4x2.7mm_P1.3mm' : 'LED_2.4X2.7MM',
-
-    'Fuse_1812_4532Metric' : 'FUSE_1812',
-
-    'SW_SPST_EVQPE1' : 'SW_EVQPE1'
-}
-
-# Default height to assign to parts based on the package.
+# Internal lookup table containing part heights based on the packages.
 #
-# NOTE: if there is not an entry in this collection it will default to 0.0mm.
-part_height_mapping = {
-    'C_0402' : '0.35',
-    'C_0603' : '0.45',
-    'C_0805' : '0.45',
-    'C_1206' : '0.55',
-    'C_1210' : '0.55',
-    'R_0402' : '0.35',
-    'R_0603' : '0.45',
-    'R_0805' : '0.45',
-    'R_1206' : '0.55',
-    'R_1210' : '0.55',
-    'R_4X0402' : '0.35'
-}
+# NOTE: This is updated by loading parts.json at startup.
+part_height_mapping = {}
 
-# Default package sizes.
+# Internal lookup table containg package sizes.
 #
-# NOTE: if there is not an entry in this collection it will default to 0.0mm for both height and width.
-package_size_mapping = {
-    'C_0402' : {
-        'h' : '0.5',
-        'w' : '1',
-    },
-    'C_0603' : {
-        'h' : '0.8',
-        'w' : '1.6',
-    },
-    'C_0805' : {
-        'h' : '1.2',
-        'w' : '2.0',
-    },
-    'C_1206' : {
-        'h' : '1.6',
-        'w' : '3.2',
-    },
-    'C_1210' : {
-        'h' : '2.5',
-        'w' : '3.2',
-    },
-    'R_0402' : {
-        'h' : '0.5',
-        'w' : '1',
-    },
-    'R_0603' : {
-        'h' : '0.8',
-        'w' : '1.6',
-    },
-    'R_0805' : {
-        'h' : '1.2',
-        'w' : '2.0',
-    },
-    'R_1206' : {
-        'h' : '1.6',
-        'w' : '3.2',
-    },
-    'R_1210' : {
-        'h' : '2.5',
-        'w' : '3.2',
-    },
-    'R_2512' : {
-        'h' : '3.2',
-        'w' : '6.3',
-    },
-    'SOIC8_3.9X4.9MM' : {
-        'h' : '4.9',
-        'w' : '3.9',
-    },
-    'HTSSOP16_4.4X5MM' : {
-        'h' : '5.0',
-        'w' : '4.4',
-    },
-    'HTSSOP24_4.4X7.8MM' : {
-        'h' : '7.8',
-        'w' : '4.4',
-    },
-    'TSSOP28_4.4X9.7MM' : {
-        'h' : '9.7',
-        'w' : '4.4',
-    },
-    'L_0603' : {
-        'h' : '0.8',
-        'w' : '1.6',
-    },
-    'C_5X5.3MM' : {
-        'h' : '5.3',
-        'w' : '5.0',
-    },
-    'C_6.3X7.7' : {
-        'h' : '7.7',
-        'w' : '6.3',
-    },
-    'C_6.3X5.4' : {
-        'h' : '5.4',
-        'w' : '6.3',
-    },
-    'LED_0603' : {
-        'h' : '0.8',
-        'w' : '1.6',
-    },
-    'LED_0805' : {
-        'h' : '1.2',
-        'w' : '2.0',
-    },
-    'LED_2.4X2.7MM' : {
-        'h' : '2.7',
-        'w' : '2.4',
-    },
-    'FUSE_1812' : {
-        'h' : '3.2',
-        'w' : '4.5'
-    }
-}
+# NOTE: This is updated by loading parts.json at startup.
+package_size_mapping = {}
 
 def create_board_xml(placements, board_origin_x, board_origin_y, x_size, y_size, pcb_board_file, board_xml_file):
     print('Creating {} with {} parts to be placed'.format(board_xml_file, len(placements)))
@@ -409,8 +238,8 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
             fp_name = str(footprint.GetFPID().GetLibItemName())
 
             # check if we have a mapping for the footprint name
-            if fp_name in footprint_to_package_mapping:
-                fp_name = footprint_to_package_mapping[fp_name]
+            if fp_name.upper() in footprint_to_package_mapping:
+                fp_name = footprint_to_package_mapping[fp_name.upper()]
 
             #print('Footprint: {}'.format(fp_name))
             fp_value = str(footprint.GetValue())
@@ -505,6 +334,11 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
     print('Found {} unique SMD packages used by {} unique parts'.format(len(packages), len(parts)))
     return packages, parts, placements
 
+def get_script_directory():
+    script = os.path.realpath(__file__)
+    dirname = os.path.dirname(script)
+    return dirname
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--board', type=str, help='KiCad PCB to parse, foo.kicad_pcb', required=True)
 parser.add_argument('--board_xml', type=str, help='OpenPnP board.xml to generate', required=True)
@@ -516,7 +350,28 @@ parser.add_argument('--nozzle', type=str, help='Default nozzle(s) to assign as c
 parser.add_argument('--ignore_top', help='Exclude pads on the F_Cu (top) layer', default=False, action='store_true')
 parser.add_argument('--ignore_bottom', help='Exclude pads on the B_Cu (bottom) layer', default=False, action='store_true')
 parser.add_argument('--read_only', help='Enable this option to disable updating any OpenPnP files, board.xml will still be generated.', default=False, action='store_true')
+parser.add_argument('--parts_json', type=str, help='Location of parts.json', default='{}/parts.json'.format(get_script_directory()))
 args = parser.parse_args()
+
+# Check for and load parts.json into the lookup tables used by the package and
+# parts verification code.
+if os.path.exists(args.parts_json):
+    with open(args.parts_json, 'r') as f:
+        parts = json.load(f)
+        for part in parts:
+            if 'alias' in part:
+                if isinstance(part['alias'], str):
+                    footprint_to_package_mapping[part['alias'].upper()] = part['id']
+                else:
+                    for alias in part['alias']:
+                        footprint_to_package_mapping[alias.upper()] = part['id']
+            if 'z_mm' in part and part['z_mm']:
+                part_height_mapping[part['id']] = str(part['z_mm'])
+            if 'x_mm' in part and part['x_mm'] and 'y_mm' in part and part['y_mm']:
+                package_size_mapping[part['id']] = {
+                    'h' : str(part['x_mm']),
+                    'w' : str(part['y_mm']),
+                }
 
 if not os.path.exists(args.board):
     raise '{} does not appear to be a valid file'.format(args.board)

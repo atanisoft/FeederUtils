@@ -1,0 +1,323 @@
+[
+    {
+        "id": "FIDUCIAL_0.5X1",
+        "alias": "Fiducial_0.5mm_Mask1mm"
+        
+    },
+    {
+        "id": "FIDUCIAL_0.5X1.5",
+        "alias": "Fiducial_0.5mm_Mask1.5mm"
+    },
+    {
+        "id": "FIDUCIAL_0.75X1.5",
+        "alias": "Fiducial_0.75mm_Mask1.5mm"
+    },
+    {
+        "id": "FIDUCIAL_0.75X2.25",
+        "alias": "Fiducial_0.75mm_Mask2.25mm"
+    },
+    {
+        "id": "FIDUCIAL_1X2",
+        "alias": "Fiducial_1mm_Mask2mm"
+    },
+    {
+        "id": "FIDUCIAL_1X3",
+        "alias": "Fiducial_1mm_Mask3mm"
+    },
+    {
+        "id": "FIDUCIAL_1X4.5",
+        "alias": "Fiducial_1mm_Mask4.5mm"
+    },
+    {
+        "id": "FIDUCIAL_1.5X2",
+        "alias": "Fiducial_1.5mm_Mask2mm"
+    },
+    {
+        "id": "C_0402",
+        "alias": [
+            "C_0402_1005Metric_Pad0.74x0.62mm_HandSolder",
+            "C_0402_1005Metric"
+        ],
+        "x_mm": 0.5,
+        "y_mm": 1,
+        "z_mm": 0.35
+    },
+    {
+        "id": "C_0603",
+        "alias": [
+            "C_0603_1608Metric_Pad1.08x0.95mm_HandSolder",
+            "C_0603_1608Metric"
+        ],
+        "x_mm": 0.8,
+        "y_mm": 1.6,
+        "z_mm": 0.45
+    },
+    {
+        "id": "C_0805",
+        "alias": [
+            "C_0805_2012Metric_Pad1.15x1.40mm_HandSolder",
+            "C_0805_2012Metric_Pad1.18x1.45mm_HandSolder",
+            "C_0805_2012Metric"
+        ],
+        "x_mm": 1.2,
+        "y_mm": 2.0,
+        "z_mm": 0.45
+    },
+    {
+        "id": "C_1206",
+        "alias": [
+            "C_1206_3216Metric_Pad1.33x1.80mm_HandSolder",
+            "C_1206_3216Metric"
+        ],
+        "x_mm": 1.6,
+        "y_mm": 3.2,
+        "z_mm": 0.55
+    },
+    {
+        "id": "C_1210",
+        "alias": [
+            "C_1210_3225Metric_Pad1.33x2.70mm_HandSolder",
+            "C_1210_3225Metric"
+        ],
+        "x_mm": 2.5,
+        "y_mm": 3.2,
+        "z_mm": 0.55
+    },
+    {
+        "id": "C_5X5.3MM",
+        "alias": "CP_Elec_5x5.3",
+        "x_mm": 5.3,
+        "y_mm": 5.0
+    },
+    {
+        "id": "C_6.3X5.4",
+        "alias":"CP_Elec_6.3x5.4",
+        "x_mm": 5.4,
+        "y_mm": 6.3
+    },
+    {
+        "id": "C_6.3X7.7",
+        "alias": "CP_Elec_6.3x7.7",
+        "x_mm": 7.7,
+        "y_mm": 6.3
+    },
+    {
+        "id": "R_0402",
+        "alias": [
+            "R_0402_1005Metric_Pad0.72x0.64mm_HandSolder",
+            "R_0402_1005Metric"
+        ],
+        "x_mm": 0.5,
+        "y_mm": 1,
+        "z_mm": 0.35
+    },
+    {
+        "id": "R_0603",
+        "alias": [
+            "R_0603_1608Metric_Pad0.98x0.95mm_HandSolder",
+            "R_0603_1608Metric"
+        ],
+        "x_mm": 0.8,
+        "y_mm": 1.6,
+        "z_mm": 0.45
+    },
+    {
+        "id": "R_0805",
+        "alias": [
+            "R_0805_2012Metric_Pad1.20x1.40mm_HandSolder",
+            "R_0805_2012Metric"
+        ],
+        "x_mm": 1.2,
+        "y_mm": 2.0,
+        "z_mm": 0.45
+    },
+    {
+        "id": "R_1206",
+        "alias": [
+            "R_1206_3216Metric_Pad1.30x1.75mm_HandSolder",
+            "R_1206_3216Metric"
+        ],
+        "x_mm": 1.6,
+        "y_mm": 3.2,
+        "z_mm": 0.55
+    },
+    {
+        "id": "R_1210",
+        "alias": [
+            "R_1210_3225Metric_Pad1.30x2.65mm_HandSolder",
+            "R_1210_3225Metric"
+        ],
+        "x_mm": 2.5,
+        "y_mm": 3.2,
+        "z_mm": 0.55
+    },
+    {
+        "id": "R_2512",
+        "alias": [
+            "R_2512_6332Metric_Pad1.40x3.35mm_HandSolder",
+            "R_2512_6332Metric"
+        ],
+        "x_mm": 3.2,
+        "y_mm": 6.3,
+        "z_mm": 0.55
+    },
+    {
+        "id": "R_4X0402",
+        "alias": "R_Array_Concave_4x0402",
+        "z_mm": 0.35
+    },
+    {
+        "id": "R_SHUNT_WSKW0612",
+        "alias": "R_Shunt_Vishay_WSKW0612"
+    },
+    {
+        "id": "L_TAIYO_40XX",
+        "alias": [
+            "L_Taiyo-Yuden_NR-40xx_HandSoldering",
+            "L_Taiyo-Yuden_NR-40xx"
+        ]
+    },
+    {
+        "id": "L_0603",
+        "alias": [
+            "L_0603_1608Metric_Pad1.05x0.95mm_HandSolder",
+            "L_0603_1608Metric"
+        ],
+        "x_mm": 0.8,
+        "y_mm": 1.6
+    },
+    {
+        "id": "SOT223",
+        "alias": "SOT-223-3_TabPin2"
+    },
+    {
+        "id": "SOT353",
+        "alias": [
+            "SOT-353_SC-70-5_Handsoldering",
+            "SOT-353_SC-70-5"
+        ]
+    },
+    {
+        "id": "QFN28_6x6MM",
+        "alias": "QFN-28-1EP_6x6mm_P0.65mm_EP4.25x4.25mm"
+    },
+    {
+        "id": "TSSOP28_4.4X9.7MM",
+        "alias": [
+            "TSSOP-28_4.4x9.7mm_P0.65mm",
+            "TSSOP-28-1EP_4.4x9.7mm_P0.65mm",
+            "TSSOP-28-1EP_4.4x9.7mm_P0.65mm_EP2.85x6.7mm"
+        ],
+        "x_mm": 9.7,
+        "y_mm": 4.4
+    },
+    {
+        "id": "TSSOP14",
+        "alias": [
+            "TSSOP-14_4.4x5mm_P0.65mm",
+            "TSSOP-14-1EP_4.4x5mm_P0.65mm"
+        ],
+        "x_mm": 5.0,
+        "y_mm": 4.4
+    },
+    {
+        "id": "HTSSOP16",
+        "alias": [
+            "HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm",
+            "HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask2.46x2.31mm",
+            "HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask2.46x2.31mm_ThermalVias",
+            "HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask3x3mm_ThermalVias",
+            "HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3x3mm"
+        ],
+        "x_mm": 5.0,
+        "y_mm": 4.4
+    },
+    {
+        "id": "HTSSOP24",
+        "alias": [
+            "HTSSOP-24-1EP_4.4x7.8mm_P0.65mm_EP3.2x5mm",
+            "HTSSOP-24-1EP_4.4x7.8mm_P0.65mm_EP3.4x7.8mm_Mask2.4x4.68mm",
+            "HTSSOP-24-1EP_4.4x7.8mm_P0.65mm_EP3.4x7.8mm_Mask2.4x4.68mm_ThermalVias"
+        ],
+        "x_mm": 7.8,
+        "y_mm": 4.4
+    },
+    {
+        "id": "SOIC8_3.9X4.9MM",
+        "alias": [
+            "SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.29x3mm",
+            "SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.514x3.2mm_ThermalVias",
+            "SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.29x3mm_ThermalVias",
+            "SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.62x3.51mm",
+            "SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.41x3.3mm",
+            "SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.62x3.51mm_ThermalVias",
+            "SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.41x3.3mm_ThermalVias",
+            "SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.95x4.9mm_Mask2.71x3.4mm",
+            "SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.41x3.81mm",
+            "SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.95x4.9mm_Mask2.71x3.4mm_ThermalVias",
+            "SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.41x3.81mm_ThermalVias",
+            "SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.514x3.2mm",
+            "SOIC-8_3.9x4.9mm_P1.27mm"
+        ],
+        "x_mm": 4.9,
+        "y_mm": 3.9
+    },
+    {
+        "id": "TO252_2M",
+        "alias": [
+            "TO-252-2",
+            "TO-252-2_TabPin1"
+        ]
+    },
+    {
+        "id": "TSOT23_6",
+        "alias": [
+            "TSOT-23-6",
+            "TSOT-23-6_HandSoldering"
+        ]
+    },
+    {
+        "id": "D_SMA",
+        "alias": [
+            "D_SMA",
+            "D_SMA_Handsoldering"
+        ]
+    },
+    {
+        "id": "LED_0603",
+        "alias": [
+            "LED_0603_1608Metric",
+            "LED_0603_1608Metric_Pad1.05x0.95mm_HandSolder"
+        ],
+        "x_mm": 0.8,
+        "y_mm": 1.6
+    },
+    {
+        "id": "LED_0805",
+        "alias": [
+            "LED_0805_2012Metric",
+            "LED_0805_2012Metric_Pad1.15x1.40mm_HandSolder"
+        ],
+        "x_mm": 1.2,
+        "y_mm": 2.0
+    },
+    {
+        "id": "LED_2.4X2.7MM",
+        "alias": "LED_SK6805_PLCC4_2.4x2.7mm_P1.3mm",
+        "x_mm": 2.7,
+        "y_mm": 2.4
+    },
+    {
+        "id": "FUSE_1812",
+        "alias": [
+            "Fuse_1812_4532Metric",
+            "Fuse_1812_4532Metric_Pad1.30x3.40mm_HandSolder"
+        ],
+        "x_mm": 3.2,
+        "y_mm": 4.5
+    },
+    {
+        "id": "SW_EVQPE1",
+        "alias": "SW_SPST_EVQPE1"
+    }
+]
