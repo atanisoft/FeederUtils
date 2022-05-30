@@ -10,14 +10,14 @@ In order to have the top down cameras recognize the feeders they need to scan a 
 
 ![Label map file listing contents of each sheet of labels](../docs/map-file.png)
 
-To generate the labels you can use the following commands:
+To generate the labels use the following commands:
 
-    python3 ./generate_labels.py
+    python3 ./generate_labels.py -p parts_example.txt
     
 To offset the starting index of the QR codes on the sheet of paper by 2:
 
-    python3 ./generate_labels.py 2
+    python3 ./generate_labels.py -p parts_example.txt -i 2
     
 To use a different page template json file add the filename to the end of the command
 
-    python3 ./generate_labels.py 2 neon_labels_0.5inch.json
+    python3 ./generate_labels.py -p parts_example.txt -i 2 -c neon_labels_0.5inch.json
