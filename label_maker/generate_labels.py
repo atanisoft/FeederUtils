@@ -4,23 +4,16 @@
 # SPDX-License-Identifier: MIT
 #
 
+import argparse
 import sys
 import os
-import math 
+import math
+from pathlib import Path
 from PIL import Image
-
-import argparse
-
-parser = argparse.ArgumentParser()
-parser.add_argument('-c', '--config', type=str, help='Label configuration file', default='default.json')
-parser.add_argument('-i', '--index', type=int, help='Starting index on the label sheet', default=0)
-parser.add_argument('-p', '--parts', type=str, help='Text file with each part on a new line', default='')
-args = parser.parse_args()
-
+import xml.etree.ElementTree as ET
 
 import download_qr
 import config
-
 
 def get_current_directory():
     script = os.path.realpath(__file__)
@@ -127,6 +120,7 @@ def generate(startIndex = 0, templateFile = "default.json", partList = []):
 
     config.load(templateFile)
 
+    print('Generating QR Codes...')
     for part in partList:
         if not "FIDUCIAL" in part.upper():
             download_qr.download(part, config.data['labelSize'], config.data['labelBorder'])
@@ -157,6 +151,7 @@ def generate(startIndex = 0, templateFile = "default.json", partList = []):
     labelsPerSheet = config.data["rows"] * config.data['columns']
     totalPages = math.ceil((len(labelsList)) / labelsPerSheet)
 
+    print('Merging QR Codes into printable pages...')
     # create PNG files for each page of labels
     for page in range(totalPages):
         create_page(page, labelsList[0:labelsPerSheet])
@@ -165,13 +160,33 @@ def generate(startIndex = 0, templateFile = "default.json", partList = []):
     # delete old label images
     delete_labels()
 
-def main():
-    print("Generating QR Code Part ID Sheet")
+parser = argparse.ArgumentParser()
+parser.add_argument('-c', '--config', type=str, help='Label configuration file', default='default.json')
+parser.add_argument('-i', '--index', type=int, help='Starting index on the label sheet', default=0)
+parser.add_argument('-p', '--parts', type=str, help='Text file with each part on a new line', default='')
+parser.add_argument('-f', '--fetch', default=False, help='Text file with each part on a new line', action='store_true')
+parser.add_argument('--parts_xml', type=str, help='Location of parts.xml', default='{}/.openpnp2/parts.xml'.format(Path.home()))
+args = parser.parse_args()
 
+if args.fetch:
+    print('Reading parts list from OpenPnP: {}'.format(args.parts_xml))
+    parts_xml = ET.parse(args.parts_xml)
+    parts_root = parts_xml.getroot()
+    partList = []
+    for part in parts_root:
+        part_id = part.attrib['id']
+        if '/' in part_id or '\\' in part_id:
+            new_part_id = part_id.replace('/','_').replace('\\','_')
+            print('Warning: Part {} contains characters that will be problematic, new name: {}'.format(part_id, new_part_id))
+            part_id = new_part_id
+        partList.append(part_id)
+else:
+    print('Reading parts list from: {}'.format(args.parts))
     with open(args.parts, 'r') as file:
         partList = file.read().splitlines()
 
-    generate(args.index, args.config, partList)
+print('Generating labels for {} parts'.format(len(partList)))
 
-if __name__ == "__main__":
-    main()
+generate(args.index, args.config, partList)
+
+print('QR Codes generated!')
