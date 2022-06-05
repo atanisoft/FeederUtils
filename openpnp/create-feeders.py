@@ -22,7 +22,7 @@
 from org.openpnp.model import Configuration, Location
 from org.openpnp.machine.reference import ReferenceActuator
 from org.openpnp.machine.reference.driver import GcodeDriver
-from org.openpnp.machine.reference.feeder import ReferenceSlotAutoFeeder
+from org.openpnp.machine.reference.feeder import ReferenceAutoFeeder, ReferenceSlotAutoFeeder
 from org.openpnp.spi import Actuator
 from org.openpnp.model import LengthUnit
 
@@ -45,6 +45,10 @@ use_part_id_for_feeder = True
 # Set this to True to use the AVR based 0816 Feeder Controller. When set to
 # False the ESP32 controller is used.
 use_avr_controller = True
+
+# Set this to True to configure feeders as ReferenceSlotAutoFeeder. When set
+# to False the feeders will be created as ReferenceAutoFeeder instead.
+use_slotted_feeders = True
 
 ######## END OF USER MODIFYABLE SETTINGS ########
 
@@ -125,7 +129,18 @@ def find_or_create_0816_gcode_driver(driver_name):
         machine.addDriver(target_driver)
     return target_driver
 
-def create_slotted_feeders(count, start_x, start_y, offset_x, offset_y, feed_actuator):
+def create_auto_feeders(count, start_x, start_y, offset_x, offset_y, feed_actuator, postpick_actuator):
+    # Create N feeders ReferenceSlotAutoFeeder
+    for id in range(0, count):
+        feeder = ReferenceAutoFeeder('Feeder-{}'.format(id))
+        feeder.setLocation(Location(LengthUnit.Millimeters, start_x + (offset_x * id), start_y + (offset_y * id), 0, 0))
+        feeder.setActuatorName(feed_actuator)
+        feeder.setActuatorValue(id)
+        feeder.setPostPickActuatorName(postpick_actuator)
+        feeder.setPostPickActuatorValue(id)
+        machine.addFeeder(feeder)
+
+def create_slotted_feeders(count, start_x, start_y, offset_x, offset_y, feed_actuator, postpick_actuator):
     # Get (or create) the default bank for the feeders.
     bank = ReferenceSlotAutoFeeder.getBanks()[0]
     # Create N feeders ReferenceSlotAutoFeeder
@@ -167,35 +182,50 @@ if use_avr_controller:
         avr_feeder_advance_4mm, avr_actuator_4mm,
         avr_feeder_postpick, avr_postpick_actuator,
         avr_feeder_enable, avr_feeder_disable)
-    create_slotted_feeders(feeder_count,
-        feeder_starting_pick_location_x, feeder_starting_pick_location_y,
-        feeder_offset_x, feeder_offset_y, avr_actuator_4mm)
+    if use_slotted_feeders:
+        create_slotted_feeders(feeder_count,
+            feeder_starting_pick_location_x, feeder_starting_pick_location_y,
+            feeder_offset_x, feeder_offset_y, avr_actuator_4mm,
+            avr_postpick_actuator)
+    else:
+        create_auto_feeders(feeder_count,
+            feeder_starting_pick_location_x, feeder_starting_pick_location_y,
+            feeder_offset_x, feeder_offset_y, avr_actuator_4mm,
+            avr_postpick_actuator)
 else:
     configure_0816_feeder_gcode(esp32_gcode_driver,
         esp32_feeder_advance, esp32_feeder_advance_actuator,
         None, None, # ESP32 only uses one feeder actuator
         esp32_feeder_postpick, esp32_postpick_actuator,
         None, None) # ESP32 does not use a global enable
-    create_slotted_feeders(feeder_count,
-        feeder_starting_pick_location_x, feeder_starting_pick_location_y,
-        feeder_offset_x, feeder_offset_y, esp32_feeder_advance_actuator)
+    if use_slotted_feeders:
+        create_slotted_feeders(feeder_count,
+            feeder_starting_pick_location_x, feeder_starting_pick_location_y,
+            feeder_offset_x, feeder_offset_y, esp32_feeder_advance_actuator,
+            esp32_postpick_actuator)
+    else:
+        create_auto_feeders(feeder_count,
+            feeder_starting_pick_location_x, feeder_starting_pick_location_y,
+            feeder_offset_x, feeder_offset_y, esp32_feeder_advance_actuator,
+            esp32_postpick_actuator)
 
-bank = ReferenceSlotAutoFeeder.getBanks()[0]
-if use_part_id_for_feeder:
-    for part in Configuration.get().getParts():
-        if not find_feeder_in_bank(part.getId(), bank):
-            print('Creating feeder for part \'{}\''.format(part.getId()))
-            feeder = ReferenceSlotAutoFeeder.Feeder()
-            feeder.setName(part.getId())
-            feeder.setPart(part)
-            bank.getFeeders().add(feeder)
-else:
-    for id in range(0, feeder_count):
-        name = 'Feeder-{}'.format(id)
-        feeder = find_feeder_in_bank(name, bank)
-        if not feeder:
-            print('Creating feeder \'{}\''.format(name))
-            feeder = ReferenceSlotAutoFeeder.Feeder()
-            feeder.setName(name)
-            feeder.setPart(Configuration.get().getPart('HOMING-FIDUCIAL'))
-            bank.getFeeders().add(feeder)
+if use_slotted_feeders:
+    bank = ReferenceSlotAutoFeeder.getBanks()[0]
+    if use_part_id_for_feeder:
+        for part in Configuration.get().getParts():
+            if not find_feeder_in_bank(part.getId(), bank):
+                print('Creating feeder for part \'{}\''.format(part.getId()))
+                feeder = ReferenceSlotAutoFeeder.Feeder()
+                feeder.setName(part.getId())
+                feeder.setPart(part)
+                bank.getFeeders().add(feeder)
+    else:
+        for id in range(0, feeder_count):
+            name = 'Feeder-{}'.format(id)
+            feeder = find_feeder_in_bank(name, bank)
+            if not feeder:
+                print('Creating feeder \'{}\''.format(name))
+                feeder = ReferenceSlotAutoFeeder.Feeder()
+                feeder.setName(name)
+                feeder.setPart(Configuration.get().getPart('HOMING-FIDUCIAL'))
+                bank.getFeeders().add(feeder)
