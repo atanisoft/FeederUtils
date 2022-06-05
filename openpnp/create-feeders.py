@@ -218,6 +218,13 @@ if use_slotted_feeders:
                 feeder = ReferenceSlotAutoFeeder.Feeder()
                 feeder.setName(part.getId())
                 feeder.setPart(part)
+                part_x = part.getPackage().getFootprint().getBodyWidth() / 2.0 if part.getPackage().getFootprint().getBodyWidth() > 0.0 else 0.0
+                part_y = part.getPackage().getFootprint().getBodyHeight() / 2.0 if part.getPackage().getFootprint().getBodyHeight() > 0.0 else 0.0
+                part_z = part.getHeight().getValue()
+                part_rotation = 0
+                print('[{}] pick offset: x:{}, y:{}, z:{}'.format(part.getId(), part_x, part_y, part_z))
+                part_size = Location(LengthUnit.Millimeters, part_x, part_y, part_z, part_rotation)
+                feeder.setOffsets(feeder.getOffsets().add(part_size))
                 bank.getFeeders().add(feeder)
     else:
         for id in range(0, feeder_count):
@@ -229,3 +236,4 @@ if use_slotted_feeders:
                 feeder.setName(name)
                 feeder.setPart(Configuration.get().getPart('HOMING-FIDUCIAL'))
                 bank.getFeeders().add(feeder)
+    gui.getFeedersTab().repaint()
