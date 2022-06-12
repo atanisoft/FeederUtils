@@ -54,9 +54,7 @@ part_height_mapping = {}
 # NOTE: This is updated by loading parts.json at startup.
 package_size_mapping = {}
 
-def create_board_xml(placements, board_origin_x, board_origin_y, x_size, y_size, pcb_board_file, board_xml_file):
-    print('Creating {} with {} parts to be placed'.format(board_xml_file, len(placements)))
-
+def create_board_xml(placements, board_origin_x, board_origin_y, x_size, y_size, pcb_board_file, board_xml_file, decimal_places):
     # <openpnp-board version="1.1" name="{board name}">
     openpnp_board = ET.Element('openpnp-board', {
         'version' : "1.1",
@@ -66,8 +64,8 @@ def create_board_xml(placements, board_origin_x, board_origin_y, x_size, y_size,
     #<dimensions units="Millimeters" x="100.0" y="80.0" z="0.0" rotation="0.0"/>
     ET.SubElement(openpnp_board, 'dimensions', {
         'units': 'Millimeters',
-        'x' : str(round(x_size, 10)),
-        'y' : str(round(y_size, 10)),
+        'x' : str(x_size),
+        'y' : str(y_size),
         'z' : '0.0',
         'rotation' : '0.0'
     })
@@ -89,8 +87,8 @@ def create_board_xml(placements, board_origin_x, board_origin_y, x_size, y_size,
         placement_y = placement['y'] - board_origin_y
         ET.SubElement(node, 'location', {
             'units' : 'Millimeters',
-            'x' : str(abs(round(placement_x, 10))),
-            'y' : str(abs(round(placement_y, 10))),
+            'x' : str(abs(round(placement_x, decimal_places))),
+            'y' : str(abs(round(placement_y, decimal_places))),
             'z' : '0.0',
             'rotation' : str(placement['rotation'])
         })
@@ -112,8 +110,8 @@ def update_parts_xml(parts, parts_xml_file, is_read_only):
                 'id' : part,
                 'name' : part,
                 'height-units' : 'Millimeters',
-                'height' : part_height_mapping[parts[part]] if parts[part] in part_height_mapping else '0.0',
-                'package-id' : parts[part],
+                'height' : part_height_mapping[parts[part]['package']] if parts[part]['name'] in part_height_mapping else '0.0',
+                'package-id' : parts[part]['package'],
                 'speed' : '1.0',
                 'pick-retry-count' : '0'
             })
@@ -124,7 +122,7 @@ def update_parts_xml(parts, parts_xml_file, is_read_only):
             ET.indent(parts_root)
         parts_xml.write(parts_xml_file)
     else:
-        print('All required parts have been found, no update to parts.xml required')
+        print('All parts have been found, no update of {} required'.format(parts_xml_file))
 
 def update_packages_xml(packages, packages_xml_file, usable_nozzles, is_read_only):
     packages_xml = ET.parse(packages_xml_file)
@@ -213,10 +211,9 @@ def update_packages_xml(packages, packages_xml_file, usable_nozzles, is_read_onl
             ET.indent(packages_root)
         packages_xml.write(packages_xml_file)
     else:
-        print('All required packages have been found, no update to packages.xml required')
+        print('All packages have been found, no update of {} required'.format(packages_xml_file))
 
 def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value_for_part_id, use_mixedcase):
-    print('Board contains {} footprints'.format(len(board.GetFootprints())))
     packages = {}
     parts = {}
     placements = []
@@ -235,13 +232,13 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
                 continue
             elif ignore_bottom and footprint.GetLayer() == pcbnew.B_Cu:
                 continue
-            fp_name = str(footprint.GetFPID().GetLibItemName())
+            package_name = str(footprint.GetFPID().GetLibItemName())
 
             # check if we have a mapping for the footprint name
-            if fp_name.upper() in footprint_to_package_mapping:
-                fp_name = footprint_to_package_mapping[fp_name.upper()]
+            if package_name.upper() in footprint_to_package_mapping:
+                package_name = footprint_to_package_mapping[package_name.upper()]
 
-            #print('Footprint: {}'.format(fp_name))
+            #print('Footprint: {}'.format(fp_npackage_nameame))
             fp_value = str(footprint.GetValue())
             fp_ref = str(footprint.GetReference())
 
@@ -252,86 +249,95 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
             #   <error-handling>Alert</error-handling>
             # </placement>
             placement_type = 'Placement' if 'Fiducial' not in fp_value else 'Fiducial'
-            placement_name = '{}_{}'.format(fp_name, fp_value) if 'Fiducial' not in fp_value else fp_name
+            part_name = '{}_{}'.format(package_name, fp_value) if 'Fiducial' not in fp_value else package_name
 
             if use_value_for_part_id:
-                placement_name = fp_value
+                part_name = fp_value
 
             if not use_mixedcase:
-                placement_name = placement_name.upper()
-                fp_name = fp_name.upper()
+                part_name = part_name.upper()
+                package_name = package_name.upper()
             
-            parts[placement_name] = fp_name
+            if part_name not in parts:
+                parts[part_name] = {
+                    'package': package_name,
+                    'count' : 1,
+                    'refs' : [ footprint.GetReference() ]
+                }
+            else:
+                parts[part_name]['count'] += 1
+                parts[part_name]['refs'].append(footprint.GetReference())
+            parts[part_name]['refs'].sort()
 
             placements.append({'id' : footprint.GetReference(),
                 'side' : 'Top' if footprint.GetLayer() == pcbnew.F_Cu else 'Bottom',
-                'part-id' : placement_name,
+                'part-id' : part_name,
                 'type' : placement_type,
                 'x' : pcbnew.Iu2Millimeter(footprint.GetPosition().x),
                 'y' : pcbnew.Iu2Millimeter(footprint.GetPosition().y),
                 'rotation' : footprint.GetOrientationDegrees()
             })
-            packages[fp_name] = {}
-            for pad in footprint.Pads():
-                # Calculate the X/Y offset from the footprint in the PCB, this needs to be adjusted
-                # for the footprint position.
-                fp_offs_x_mm = pcbnew.Iu2Millimeter(pad.GetPosition().x - footprint.GetPosition().x)
-                fp_offs_y_mm = pcbnew.Iu2Millimeter(pad.GetPosition().y - footprint.GetPosition().y)
+            if package_name not in packages:
+                packages[package_name] = {}
+                for pad in footprint.Pads():
+                    # Calculate the X/Y offset from the footprint in the PCB, this needs to be adjusted
+                    # for the footprint position.
+                    fp_offs_x_mm = pcbnew.Iu2Millimeter(pad.GetPosition().x - footprint.GetPosition().x)
+                    fp_offs_y_mm = pcbnew.Iu2Millimeter(pad.GetPosition().y - footprint.GetPosition().y)
 
-                # Calculate the footprint pad size
-                fp_size_w_mm = pcbnew.Iu2Millimeter(pad.GetSizeX())
-                fp_size_h_mm = pcbnew.Iu2Millimeter(pad.GetSizeY())
+                    # Calculate the footprint pad size
+                    fp_size_w_mm = pcbnew.Iu2Millimeter(pad.GetSizeX())
+                    fp_size_h_mm = pcbnew.Iu2Millimeter(pad.GetSizeY())
 
-                # Determine the pad shape, the value from this method is PAD_SHAPE::{value}
-                # where {value} is: CIRCLE, RECT, OVAL, TRAPEZOID, ROUNDRECT, CHAMFERED_RECT, CUSTOM
-                pad_shape = pcbnew.PAD_SHAPE_T_asString(pad.GetShape()).split('::')[1]
+                    # Determine the pad shape, the value from this method is PAD_SHAPE::{value}
+                    # where {value} is: CIRCLE, RECT, OVAL, TRAPEZOID, ROUNDRECT, CHAMFERED_RECT, CUSTOM
+                    pad_shape = pcbnew.PAD_SHAPE_T_asString(pad.GetShape()).split('::')[1]
 
-                pad_name = str(pad.GetName())
-                if 'FIDUCIAL' in fp_name.upper() and pad_name == '':
-                    pad_name = '1'
+                    pad_name = str(pad.GetName())
+                    if 'FIDUCIAL' in package_name.upper() and pad_name == '':
+                        pad_name = '1'
 
-                if pad.IsOnCopperLayer():
-                    if pad_shape == 'ROUNDRECT':
-                        radius = pcbnew.Iu2Millimeter(pad.GetRoundRectCornerRadius());
-                        packages[fp_name][pad_name] = {
-                            'w':fp_size_w_mm,
-                            'h':fp_size_h_mm,
-                            'x':fp_offs_x_mm,
-                            'y':fp_offs_y_mm,
-                            'shape':pad_shape,
-                            'radius':radius
-                        }
-    #    Need to figure out how to translate this to OpenPnP
-    #               elif pad_shape == 'CHAMFERED_RECT':
-    #                   radius = pcbnew.Iu2Millimeter(pad.GetChamferRectRatio());
-    #                   packages[fp_name][pad_name] = {
-    #                       'w':fp_size_w_mm,
-    #                       'h':fp_size_h_mm,
-    #                       'x':fp_offs_x_mm,
-    #                       'y':fp_offs_y_mm,
-    #                       'shape':pad_shape,
-    #                       'radius':radius
-    #                   }
-                    elif pad_shape == 'CIRCLE':
-                        radius = pcbnew.Iu2Millimeter(pad.GetBoundingRadius());
-                        packages[fp_name][pad_name] = {
-                            'w':fp_size_w_mm,
-                            'h':fp_size_h_mm,
-                            'x':fp_offs_x_mm,
-                            'y':fp_offs_y_mm,
-                            'shape':pad_shape,
-                            'radius':radius
-                        }
-                    else:
-                        # Generic pad
-                        packages[fp_name][pad_name] = {
-                            'w':fp_size_w_mm,
-                            'h':fp_size_h_mm,
-                            'x':fp_offs_x_mm,
-                            'y':fp_offs_y_mm,
-                            'shape':pad_shape
-                        }
-    print('Found {} unique SMD packages used by {} unique parts'.format(len(packages), len(parts)))
+                    if pad.IsOnCopperLayer():
+                        if pad_shape == 'ROUNDRECT':
+                            radius = pcbnew.Iu2Millimeter(pad.GetRoundRectCornerRadius());
+                            packages[package_name][pad_name] = {
+                                'w':fp_size_w_mm,
+                                'h':fp_size_h_mm,
+                                'x':fp_offs_x_mm,
+                                'y':fp_offs_y_mm,
+                                'shape':pad_shape,
+                                'radius':radius
+                            }
+        #    Need to figure out how to translate this to OpenPnP
+        #               elif pad_shape == 'CHAMFERED_RECT':
+        #                   radius = pcbnew.Iu2Millimeter(pad.GetChamferRectRatio());
+        #                   packages[package_name][pad_name] = {
+        #                       'w':fp_size_w_mm,
+        #                       'h':fp_size_h_mm,
+        #                       'x':fp_offs_x_mm,
+        #                       'y':fp_offs_y_mm,
+        #                       'shape':pad_shape,
+        #                       'radius':radius
+        #                   }
+                        elif pad_shape == 'CIRCLE':
+                            radius = pcbnew.Iu2Millimeter(pad.GetBoundingRadius());
+                            packages[package_name][pad_name] = {
+                                'w':fp_size_w_mm,
+                                'h':fp_size_h_mm,
+                                'x':fp_offs_x_mm,
+                                'y':fp_offs_y_mm,
+                                'shape':pad_shape,
+                                'radius':radius
+                            }
+                        else:
+                            # Generic pad
+                            packages[package_name][pad_name] = {
+                                'w':fp_size_w_mm,
+                                'h':fp_size_h_mm,
+                                'x':fp_offs_x_mm,
+                                'y':fp_offs_y_mm,
+                                'shape':pad_shape
+                            }
     return packages, parts, placements
 
 def get_script_directory():
@@ -351,6 +357,8 @@ parser.add_argument('--ignore_top', help='Exclude pads on the F_Cu (top) layer',
 parser.add_argument('--ignore_bottom', help='Exclude pads on the B_Cu (bottom) layer', default=False, action='store_true')
 parser.add_argument('--read_only', help='Enable this option to disable updating any OpenPnP files, board.xml will still be generated.', default=False, action='store_true')
 parser.add_argument('--parts_json', type=str, help='Location of parts.json', default='{}/parts.json'.format(get_script_directory()))
+parser.add_argument('--no_summary', help='Enabling this option will skip printing a parts summary after parsing', default=False, action='store_true')
+parser.add_argument('--rounding', help='This option defines how many decimal points should be kept when rounding', default=4)
 args = parser.parse_args()
 
 # Check for and load parts.json into the lookup tables used by the package and
@@ -391,11 +399,10 @@ if board_origin.x == 0 and board_origin.y == 0:
     print('WARNING: board origin is not defined!')
     print('Without a board origin, part positions are very likely going to be inaccurate!')
 
-board_width = pcbnew.Iu2Millimeter(board_edges.GetWidth())
-board_height = pcbnew.Iu2Millimeter(board_edges.GetHeight())
+board_width = round(pcbnew.Iu2Millimeter(board_edges.GetWidth()), args.rounding)
+board_height = round(pcbnew.Iu2Millimeter(board_edges.GetHeight()), args.rounding)
 board_origin_x = pcbnew.Iu2Millimeter(board_origin.x)
 board_origin_y = pcbnew.Iu2Millimeter(board_origin.y)
-print('Detected board is {}x{}mm (origin:{},{})'.format(board_width, board_height, board_origin_x, board_origin_y))
 
 if args.use_mixedcase:
     print('Packages and parts may use mixed-case names')
@@ -405,5 +412,26 @@ else:
 packages, parts, placements = identity_used_packages_and_parts(board, args.ignore_top, args.ignore_bottom, args.use_value_for_part_id, args.use_mixedcase)
 update_packages_xml(packages, args.packages, args.nozzle, args.read_only)
 update_parts_xml(parts, args.parts, args.read_only)
-create_board_xml(placements, board_origin_x, board_origin_y, board_width, board_height, args.board, args.board_xml)
+create_board_xml(placements, board_origin_x, board_origin_y, board_width, board_height, args.board, args.board_xml, args.rounding)
 
+if not args.no_summary:
+    print()
+    print('Generated OpenPnP board xml: {}'.format(args.board_xml))
+    print('PCB is approximately {}x{}mm (origin:{}, {})'.format(board_width, board_height, board_origin_x, board_origin_y))
+    print()
+    print('Board contains {} footprints, {} unique SMT parts, {} unique packages, {} parts to be placed'.format(
+        len(board.GetFootprints()), len(parts), len(packages),  len(placements)))
+    print('--------------------------------------------------------------------------------')
+    print('{: <40} {: >10} {}'.format('Part', 'Quantity', 'References'))
+    print('{: <40} {: >10} {}'.format('----------------------------------------', '----------', '---------------------------'))
+    
+    for part in sorted(parts):
+        if len(parts[part]['refs']) <= 5:
+            print('{: <40} {: >10} {}'.format(part, parts[part]['count'], ', '.join(parts[part]['refs'])))
+        else:
+            for start in range(0, len(parts[part]['refs']), 5):
+                chunk = parts[part]['refs'][start:start + 5]
+                if start == 0:
+                    print('{: <40} {: >10} {}'.format(part, parts[part]['count'], ', '.join(chunk)))
+                else:
+                    print('{: <40} {: >10} {}'.format('', '', ', '.join(chunk)))
