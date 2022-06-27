@@ -54,6 +54,16 @@ part_height_mapping = {}
 # NOTE: This is updated by loading parts.json at startup.
 package_size_mapping = {}
 
+# Internal lookup collection for parts that should be ignored.
+#
+# NOTE: This is updated by loading parts.json at startup.
+ignored_parts = []
+
+# Internal lookup collection for parts that should use package name as part-id.
+#
+# NOTE: This is updated by loading parts.json at startup.
+package_as_part_id = []
+
 def create_board_xml(placements, board_origin_x, board_origin_y, x_size, y_size, pcb_board_file, board_xml_file, decimal_places):
     # <openpnp-board version="1.1" name="{board name}">
     openpnp_board = ET.Element('openpnp-board', {
@@ -110,7 +120,7 @@ def update_parts_xml(parts, parts_xml_file, is_read_only):
                 'id' : part,
                 'name' : part,
                 'height-units' : 'Millimeters',
-                'height' : part_height_mapping[parts[part]['package']] if parts[part]['name'] in part_height_mapping else '0.0',
+                'height' : part_height_mapping[parts[part]['package']] if part in part_height_mapping else '0.0',
                 'package-id' : parts[part]['package'],
                 'speed' : '1.0',
                 'pick-retry-count' : '0'
@@ -226,13 +236,16 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
             if pad.GetAttribute() == pcbnew.PAD_ATTRIB_SMD:
                 includeFootprint = True
         if includeFootprint:
+            package_name = str(footprint.GetFPID().GetLibItemName())
+            if package_name.upper() in ignored_parts:
+                print('Ignoring part {} ({})'.format(footprint.GetReference(), package_name))
+                continue
             if 'SMD' not in footprint.GetTypeName():
-                print('WARNING: KiCad lists \'{}\' as not SMD but includes SMD pads!'.format(footprint.GetReference()))
+                print('WARNING: KiCad lists \'{}\' as not SMD but it includes SMD pads!'.format(footprint.GetReference()))
             if ignore_top and footprint.GetLayer() == pcbnew.F_Cu:
                 continue
             elif ignore_bottom and footprint.GetLayer() == pcbnew.B_Cu:
                 continue
-            package_name = str(footprint.GetFPID().GetLibItemName())
 
             # check if we have a mapping for the footprint name
             if package_name.upper() in footprint_to_package_mapping:
@@ -244,6 +257,7 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
 
             fp_x_mm = pcbnew.Iu2Millimeter(footprint.GetPosition().x)
             fp_y_mm = pcbnew.Iu2Millimeter(footprint.GetPosition().y)
+
             # <placement version="1.4" id="U12" side="Top" part-id="74AHC1G08" type="Placement" enabled="true">
             #   <location units="Millimeters" x="193.98" y="-125.91" z="0.0" rotation="0.0"/>
             #   <error-handling>Alert</error-handling>
@@ -251,8 +265,14 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
             placement_type = 'Placement' if 'Fiducial' not in fp_value else 'Fiducial'
             part_name = '{}_{}'.format(package_name, fp_value) if 'Fiducial' not in fp_value else package_name
 
-            if use_value_for_part_id:
+            if fp_value == '~':
+                print('WARNING:\'{}\' does not have a value text, using \'{}\' as part-id!'.format(footprint.GetReference(), package_name))
+                part_name = package_name
+            elif use_value_for_part_id:
                 part_name = fp_value
+            elif str(footprint.GetFPID().GetLibItemName()).upper() in package_as_part_id:
+                print('Overriding part-id of {} to {}'.format(footprint.GetReference(), package_name))
+                part_name = package_name
 
             if not use_mixedcase:
                 part_name = part_name.upper()
@@ -380,6 +400,18 @@ if os.path.exists(args.parts_json):
                     'h' : str(part['x_mm']),
                     'w' : str(part['y_mm']),
                 }
+            if 'ignore' in part and part['ignore'] and 'alias' in part:
+                if isinstance(part['alias'], str):
+                    ignored_parts.append(part['alias'].upper())
+                else:
+                    for alias in part['alias']:
+                        ignored_parts.append(alias.upper())
+            if 'use-package-as-part-id' in part and part['use-package-as-part-id'] and 'alias' in part:
+                if isinstance(part['alias'], str):
+                    package_as_part_id.append(part['alias'].upper())
+                else:
+                    for alias in part['alias']:
+                        package_as_part_id.append(alias.upper())
 
 if not os.path.exists(args.board):
     raise '{} does not appear to be a valid file'.format(args.board)

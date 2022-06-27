@@ -318,6 +318,29 @@
     },
     {
         "id": "SW_EVQPE1",
-        "alias": "SW_SPST_EVQPE1"
+        "alias": "SW_SPST_EVQPE1",
+        "use-package-as-part-id": true
+    },
+    {
+        "id": "SW_EVQPUM",
+        "alias": "PANASONIC_EVQPUM_EVQPUD"
+    },
+    {
+        "id": "SOLDER_JUMPER",
+        "alias": [
+            "SolderJumper-2_P1.3mm_Bridged_RoundedPad1.0x1.5mm",
+            "SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+        ],
+        "ignore": true
+    },
+    {
+        "id": "MOLEX_47219-2001",
+        "alias": "MOLEX_47219-2001",
+        "use-package-as-part-id": true
+    },
+    {
+        "id": "USB_AMPHENOL_10103594-0001LF",
+        "alias": "USB_Micro-B_Amphenol_10103594-0001LF_Horizontal",
+        "use-package-as-part-id": true
     }
 ]
