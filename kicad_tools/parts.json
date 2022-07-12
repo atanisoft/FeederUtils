@@ -2,7 +2,6 @@
     {
         "id": "FIDUCIAL_0.5X1",
         "alias": "Fiducial_0.5mm_Mask1mm"
-        
     },
     {
         "id": "FIDUCIAL_0.5X1.5",
@@ -263,10 +262,38 @@
         "y_mm": 3.9
     },
     {
-        "id": "TO252_2M",
+        "id": "SOIC14_3.9X8.7MM",
+        "alias": [
+            "SOIC-14_3.9x8.7mm_P1.27mm"
+        ],
+        "x_mm": 8.7,
+        "y_mm": 3.9
+    },
+    {
+        "id": "TO252_2",
         "alias": [
             "TO-252-2",
             "TO-252-2_TabPin1"
+        ]
+    },
+    {
+        "id": "TO252_3",
+        "alias": [
+            "TO-252-3",
+            "TO-252-3_TabPin2",
+            "TO-252-3_TabPin4"
+        ]
+    },
+    {
+        "id": "TO252_4",
+        "alias": "TO-252-4"
+    },
+    {
+        "id": "TO252_5",
+        "alias": [
+            "TO-252-5",
+            "TO-252-5_TabPin3",
+            "TO-252-5_TabPin6"
         ]
     },
     {
@@ -342,5 +369,109 @@
         "id": "USB_AMPHENOL_10103594-0001LF",
         "alias": "USB_Micro-B_Amphenol_10103594-0001LF_Horizontal",
         "use-package-as-part-id": true
+    },
+    {
+        "id": "ESP32_DEVKIT",
+        "alias": "ESP32-DevKitC",
+        "ignore": true,
+        "notes" : "Footprint aliases as defined in https://github.com/espressif/kicad-libraries"
+    },
+    {
+        "id": "ESP32_WROOM",
+        "alias": [
+            "ESP32-WROOM-32E",
+            "ESP32-WROOM-32UE"
+        ],
+        "use-package-as-part-id": true,
+        "notes" : "Footprint aliases as defined in https://github.com/espressif/kicad-libraries"
+    },
+    {
+        "id": "ESP32_WROVER",
+        "alias": [
+            "ESP32-WROVER-E",
+            "ESP32-WROVER-E_Thermal_Vias"
+        ],
+        "use-package-as-part-id": true,
+        "notes" : "Footprint aliases as defined in https://github.com/espressif/kicad-libraries"
+    },
+    {
+        "id": "ESP32C3_MINI",
+        "alias": [
+            "ESP32-C3-MINI-1",
+            "ESP32-C3-MINI-1_Hand-Soldering",
+            "ESP32-C3-MINI-1U"
+        ],
+        "use-package-as-part-id": true,
+        "notes" : "Footprint aliases as defined in https://github.com/espressif/kicad-libraries"
+    },
+    {
+        "id": "ESP32C3_WROOM",
+        "alias": [
+            "ESP32-C3-WROOM-02",
+            "ESP32-C3-WROOM-02U"
+        ],
+        "use-package-as-part-id": true,
+        "notes" : "Footprint aliases as defined in https://github.com/espressif/kicad-libraries"
+    },
+    {
+        "id": "ESP32S2_DEVKIT",
+        "alias": [
+            "ESP32-S2-DevKitM",
+            "ESP32-S2-Saola-1"
+        ],
+        "ignore": true,
+        "notes" : "Footprint aliases as defined in https://github.com/espressif/kicad-libraries"
+    },
+    {
+        "id": "ESP32S2_MINI",
+        "alias": [
+            "ESP32-S2-MINI-1",
+            "ESP32-S2-MINI-1_Hand-Soldering",
+            "ESP32-S2-MINI-1U"
+        ],
+        "use-package-as-part-id": true,
+        "notes" : "Footprint aliases as defined in https://github.com/espressif/kicad-libraries"
+    },
+    {
+        "id": "ESP32S2_SOLO",
+        "alias": "ESP32-S2-SOLO",
+        "use-package-as-part-id": true,
+        "notes" : "Footprint aliases as defined in https://github.com/espressif/kicad-libraries"
+    },
+    {
+        "id": "ESP32S2_WROOM",
+        "alias": "ESP32-S2-WROOM",
+        "use-package-as-part-id": true,
+        "notes" : "Footprint aliases as defined in https://github.com/espressif/kicad-libraries"
+    },
+    {
+        "id": "ESP32S2_WROVER",
+        "alias": "ESP32-S2-WROVER",
+        "use-package-as-part-id": true,
+        "notes" : "Footprint aliases as defined in https://github.com/espressif/kicad-libraries"
+    },
+    {
+        "id": "ESP32S3_DEVKIT",
+        "alias": "ESP32-S3-DevKitC",
+        "ignore": true,
+        "notes" : "Footprint aliases as defined in https://github.com/espressif/kicad-libraries"
+    },
+    {
+        "id": "ESP32S3_MINI",
+        "alias": [
+            "ESP32-S3-MINI-1",
+            "ESP32-S3-MINI-1U"
+        ],
+        "use-package-as-part-id": true,
+        "notes" : "Footprint aliases as defined in https://github.com/espressif/kicad-libraries"
+    },
+    {
+        "id": "ESP32S3_WROOM",
+        "alias": [
+            "ESP32-S3-WROOM-1",
+            "ESP32-S3-WROOM-1U"
+        ],
+        "use-package-as-part-id": true,
+        "notes" : "Footprint aliases as defined in https://github.com/espressif/kicad-libraries"
     }
 ]

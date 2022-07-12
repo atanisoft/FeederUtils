@@ -44,7 +44,7 @@ optional arguments:
 
 ### Packages and Parts mappping
 
-[KiCad](www.kicad.org) uses very long package names as part of the PCB file. This
+[KiCad](www.kicad.org) can use very long package names as part of the PCB file. This
 is unfortunately not ideal for usage in [OpenPnP](www.openpnp.org). Additionally,
 package size data is not always available from the package name. To combat these
 problems `parts.json` has been created with a number of packages. Additional types
@@ -74,3 +74,8 @@ not specified these will show up as 0mm in [OpenPnP](www.openpnp.org).
 
 Note: The `alias` field can either be a single entry or an array of entries as
 seen above.
+
+Additional supported fields:
+* use-package-as-part-id - When present with the value of true the package name will be used as part-id
+* ignore - Parts that match this entry will be ignored when generating the board.xml file.
+* notes - Any extra notes for the entry, this is not used by the script whatsoever.
