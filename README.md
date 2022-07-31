@@ -1,16 +1,23 @@
-# Feeder Reader
+# Feeder Utilitities
 
-This project simplifies the import and feeder set up process between [KiCad](www.kicad.org) and [OpenPnP](www.openpnp.org). It uses the top down camera on your Pick and Place machine to read small QR codes on each feeder. The feeders are then automatically mapped in [OpenPnP](www.openpnp.org) saving you hours of configuration.
-
-![Open PNP Top down camera view of QR code](docs/feeder-setup.png)
+This project aims to simplify the process of importing [KiCad](www.kicad.org) PCBs into [OpenPnP](www.openpnp.org) and automating some of the tasks related to Feeder management.
 
 > **WARNING**
 > THIS PROJECT IS STILL UNDER ACTIVE DEVELOPMENT.
 > USE AT OWN RISK!
 
-## Repository layout
+## KiCad automation scripts
 
-This repository is organized by the function of the utilities.
-* [openpnp](openpnp) contains scripts which integrate and run from within [OpenPnP](www.openpnp.org).
-* [kicad_tools](kicad_tools) contains standalone scripts which automate importing of [KiCad](www.kicad.org) PCBs into [OpenPnP](www.openpnp.org)
-* [label_maker](label_maker) contains scripts related to generating QR code labels to attach onto feeders which can be used for part identification.ts.
+The [kicad_tools](kicad_tools) directory contains standalone scripts which automate importing of [KiCad](www.kicad.org) PCBs into [OpenPnP](www.openpnp.org). The scripts automate package and parts management in [OpenPnP](www.openpnp.org) based on what the PCB actually uses.
+
+## Feeder automation scripts
+
+The Feeder specific scripts automate the process of creating feeders for parts and identifying the part that a Feeder provides by using the top down camera to read a QR code attached to the Feeder.
+
+![Open PNP Top down camera view of QR code](docs/feeder-setup.png)
+
+### Automation scripts 
+
+The [openpnp](openpnp) directory contains scripts which integrate and run from within [OpenPnP](www.openpnp.org) to manage Feeder creation and part assignment.
+
+The [label_maker](label_maker) directory contains scripts used for generating QR code labels to attach onto Feeders which can be used for part identification.
