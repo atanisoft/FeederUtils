@@ -38,6 +38,8 @@ import argparse
 from pathlib import Path
 import xml.etree.ElementTree as ET
 import json
+import shutil
+from datetime import datetime
 
 # Internal lookup table for mapping KiCad footprint names to OpenPnP Packages.
 #
@@ -106,7 +108,7 @@ def create_board_xml(placements, board_origin_x, board_origin_y, x_size, y_size,
         ET.indent(openpnp_board)
     ET.ElementTree(openpnp_board).write(board_xml_file)
 
-def update_parts_xml(parts, parts_xml_file, is_read_only):
+def update_parts_xml(parts, parts_xml_file, is_read_only, backup_location):
     parts_xml = ET.parse(parts_xml_file)
     parts_root = parts_xml.getroot()
     # Process all unique packages and cross check against packages.xml
@@ -128,13 +130,16 @@ def update_parts_xml(parts, parts_xml_file, is_read_only):
     if is_read_only:
         print('Read-only mode is enabled, skipping updates to parts.xml')
     elif new_parts_added:
+        if backup_location:
+            os.makedirs(backup_location, exist_ok=True)
+            shutil.copy(parts_xml_file, backup_location)
         if sys.version_info >= (3, 9):
             ET.indent(parts_root)
         parts_xml.write(parts_xml_file)
     else:
         print('All parts have been found, no update of {} required'.format(parts_xml_file))
 
-def update_packages_xml(packages, packages_xml_file, usable_nozzles, is_read_only):
+def update_packages_xml(packages, packages_xml_file, usable_nozzles, is_read_only, backup_location):
     packages_xml = ET.parse(packages_xml_file)
     packages_root = packages_xml.getroot()
 
@@ -217,6 +222,9 @@ def update_packages_xml(packages, packages_xml_file, usable_nozzles, is_read_onl
     if is_read_only:
         print('Read-only mode is enabled, skipping updates to packages.xml')
     elif new_packages_added:
+        if backup_location:
+            os.makedirs(backup_location, exist_ok=True)
+            shutil.copy(packages_xml_file, backup_location)
         if sys.version_info >= (3, 9):
             ET.indent(packages_root)
         packages_xml.write(packages_xml_file)
@@ -368,8 +376,8 @@ def get_script_directory():
 parser = argparse.ArgumentParser()
 parser.add_argument('--board', type=str, help='KiCad PCB to parse, foo.kicad_pcb', required=True)
 parser.add_argument('--board_xml', type=str, help='OpenPnP board.xml to generate', required=True)
-parser.add_argument('--packages', type=str, help='Location of packages.xml', default='{}/.openpnp2/packages.xml'.format(Path.home()))
-parser.add_argument('--parts', type=str, help='Location of parts.xml', default='{}/.openpnp2/parts.xml'.format(Path.home()))
+parser.add_argument('--openpnp_config', type=str, help='Location of OpenPnP Configuration files', default='{}/.openpnp2'.format(Path.home()))
+parser.add_argument('--no_backup', help='Enabling this option will disable creation of backup copies of packages.xml and parts.xml', default=False)
 parser.add_argument('--use_mixedcase', help='Enabling this option will generate package names and part names using the values as-is from the PCB. When not enabled all names will be forced to upper case.', default=False, action='store_true')
 parser.add_argument('--use_value_for_part_id', help='Enabling this option will use component Value from the KiCad PCB footprint as the OpenPnP part ID', default=False, action='store_true')
 parser.add_argument('--nozzle', type=str, help='Default nozzle(s) to assign as compatible, can be specified more than once', action='append')
@@ -441,9 +449,19 @@ if args.use_mixedcase:
 else:
     print('Packages and parts will be forced to upper case')
 
+if not args.read_only and not args.nozzle:
+    print('Warning: Any parts that are created will not have default nozzle assignments, pass --nozzle <name> on the commandline to assign default nozzle(s)')
+
+backup_location = None
+if not args.read_only and not args.no_backup:
+    backup_location = '{}/backups/{}'.format(args.openpnp_config, datetime.now().strftime('%Y-%m-%d_%H.%M.%S'))
+    print('Backup location (if required):{}'.format(backup_location))
+packages_xml = '{}/packages.xml'.format(args.openpnp_config)
+parts_xml = '{}/parts.xml'.format(args.openpnp_config)
+
 packages, parts, placements = identity_used_packages_and_parts(board, args.ignore_top, args.ignore_bottom, args.use_value_for_part_id, args.use_mixedcase)
-update_packages_xml(packages, args.packages, args.nozzle, args.read_only)
-update_parts_xml(parts, args.parts, args.read_only)
+update_packages_xml(packages, packages_xml, args.nozzle, args.read_only, backup_location)
+update_parts_xml(parts, parts_xml, args.read_only, backup_location)
 create_board_xml(placements, board_origin_x, board_origin_y, board_width, board_height, args.board, args.board_xml, args.rounding)
 
 if not args.no_summary:

@@ -19,18 +19,18 @@ modify the [OpenPnP](www.openpnp.org) parts and packages definitions.
 
 Complete usage is below:
 ```
-usage: kicad-to-openpnp-standalone.py [-h] --board BOARD --board_xml BOARD_XML [--packages PACKAGES]
-                                      [--parts PARTS] [--use_mixedcase] [--use_value_for_part_id]
-                                      [--nozzle NOZZLE] [--ignore_top] [--ignore_bottom] [--read_only]
-                                      [--parts_json PARTS_JSON]
+usage: kicad-to-openpnp-standalone.py [-h] --board BOARD --board_xml BOARD_XML [--openpnp_config OPENPNP_CONFIG] [--no_backup NO_BACKUP] [--use_mixedcase] [--use_value_for_part_id] [--nozzle NOZZLE] [--ignore_top] [--ignore_bottom]
+                                      [--read_only] [--parts_json PARTS_JSON] [--no_summary] [--rounding ROUNDING]
 
 optional arguments:
   -h, --help            show this help message and exit
   --board BOARD         KiCad PCB to parse, foo.kicad_pcb
   --board_xml BOARD_XML
                         OpenPnP board.xml to generate
-  --packages PACKAGES   Location of packages.xml
-  --parts PARTS         Location of parts.xml
+  --openpnp_config OPENPNP_CONFIG
+                        Location of OpenPnP Configuration files
+  --no_backup NO_BACKUP
+                        Enabling this option will disable creation of backup copies of packages.xml and parts.xml
   --use_mixedcase       Enabling this option will generate package names and part names using the values as-is from the PCB. When not enabled all names will be forced to upper case.
   --use_value_for_part_id
                         Enabling this option will use component Value from the KiCad PCB footprint as the OpenPnP part ID
@@ -40,6 +40,8 @@ optional arguments:
   --read_only           Enable this option to disable updating any OpenPnP files, board.xml will still be generated.
   --parts_json PARTS_JSON
                         Location of parts.json
+  --no_summary          Enabling this option will skip printing a parts summary after parsing
+  --rounding ROUNDING   This option defines how many decimal points should be kept when rounding
 ```
 
 ### Packages and Parts mappping
