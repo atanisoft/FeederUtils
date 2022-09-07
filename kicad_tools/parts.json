@@ -242,6 +242,12 @@
         "y_mm": 4.4
     },
     {
+        "id": "SO8_3.9X4.9MM",
+        "alias": "SO-8_3.9x4.9mm_P1.27mm",
+        "x_mm": 4.9,
+        "y_mm": 3.9
+    },
+    {
         "id": "SOIC8_3.9X4.9MM",
         "alias": [
             "SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.29x3mm",
@@ -335,6 +341,11 @@
         "y_mm": 2.4
     },
     {
+        "id": "LED_C230KGKT",
+        "alias": "LED_LTST-C230KGKT",
+        "use-package-as-part-id": true
+    },
+    {
         "id": "FUSE_1812",
         "alias": [
             "Fuse_1812_4532Metric",
@@ -342,6 +353,15 @@
         ],
         "x_mm": 3.2,
         "y_mm": 4.5
+    },
+    {
+        "id": "FUSE_2920",
+        "alias": [
+            "Fuse_2920_7451Metric",
+            "Fuse_2920_7451Metric_Pad2.10x5.45mm_HandSolder"
+        ],
+        "x_mm": 5.1,
+        "y_mm": 7.4
     },
     {
         "id": "SW_EVQPE1",
@@ -368,6 +388,11 @@
     {
         "id": "USB_AMPHENOL_10103594-0001LF",
         "alias": "USB_Micro-B_Amphenol_10103594-0001LF_Horizontal",
+        "use-package-as-part-id": true
+    },
+    {
+        "id" : "USB4105",
+        "alias": "GCT_USB4105-GF-A",
         "use-package-as-part-id": true
     },
     {
@@ -473,5 +498,12 @@
         ],
         "use-package-as-part-id": true,
         "notes" : "Footprint aliases as defined in https://github.com/espressif/kicad-libraries"
+    },
+    {
+        "id": "MIC_CMEJ-0413-42",
+        "alias": "MIC_CMEJ-0413-42-SMT-TR",
+        "x_mm": 4.0,
+        "y_mm": 4.0,
+        "use-package-as-part-id": true
     }
 ]

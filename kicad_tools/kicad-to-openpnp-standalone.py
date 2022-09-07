@@ -235,7 +235,7 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
     packages = {}
     parts = {}
     placements = []
-        
+
     # Process all footprints that are found on the board
     for footprint in board.GetFootprints():
         # if the footprint is an SMD footprint we should process it further.
@@ -305,7 +305,14 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
                 'y' : pcbnew.Iu2Millimeter(footprint.GetPosition().y),
                 'rotation' : footprint.GetOrientationDegrees()
             })
+
             if package_name not in packages:
+                if int(footprint.GetOrientationDegrees()) != 0:
+                    # print('Part {} is rotated, correcting footprint orientation for import'.format(footprint.GetReference()))
+                    # print('Original orientation {} x:{}, y:{}'.format(footprint.GetOrientationDegrees(), pcbnew.Iu2Millimeter(footprint.GetPosition().x), pcbnew.Iu2Millimeter(footprint.GetPosition().y)))
+                    footprint.Rotate(footprint.GetCenter(), footprint.GetOrientation() * -1.0 )
+                    # print('Corrected orientation {} x:{}, y:{}'.format(footprint.GetOrientationDegrees(), pcbnew.Iu2Millimeter(footprint.GetPosition().x), pcbnew.Iu2Millimeter(footprint.GetPosition().y)))
+
                 packages[package_name] = {}
                 for pad in footprint.Pads():
                     # Calculate the X/Y offset from the footprint in the PCB, this needs to be adjusted
