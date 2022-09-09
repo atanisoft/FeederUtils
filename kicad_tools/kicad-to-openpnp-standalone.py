@@ -66,7 +66,7 @@ ignored_parts = []
 # NOTE: This is updated by loading parts.json at startup.
 package_as_part_id = []
 
-def create_board_xml(placements, board_origin_x, board_origin_y, x_size, y_size, pcb_board_file, board_xml_file, decimal_places):
+def create_board_xml(placements, board_origin_x, board_origin_y, x_size, y_size, pcb_board_file, board_xml_file, decimal_places, rotation):
     # <openpnp-board version="1.1" name="{board name}">
     openpnp_board = ET.Element('openpnp-board', {
         'version' : "1.1",
@@ -79,8 +79,9 @@ def create_board_xml(placements, board_origin_x, board_origin_y, x_size, y_size,
         'x' : str(x_size),
         'y' : str(y_size),
         'z' : '0.0',
-        'rotation' : '0.0'
+        'rotation' : str(rotation) if rotation != 0 else '0.0'
     })
+
     # top level node for all parts to be placed
     openpnp_placements = ET.SubElement(openpnp_board, 'placements')
     # not used
@@ -231,7 +232,7 @@ def update_packages_xml(packages, packages_xml_file, usable_nozzles, is_read_onl
     else:
         print('All packages have been found, no update of {} required'.format(packages_xml_file))
 
-def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value_for_part_id, use_mixedcase):
+def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value_for_part_id, use_mixedcase, rotation):
     packages = {}
     parts = {}
     placements = []
@@ -303,8 +304,9 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
                 'type' : placement_type,
                 'x' : pcbnew.Iu2Millimeter(footprint.GetPosition().x),
                 'y' : pcbnew.Iu2Millimeter(footprint.GetPosition().y),
-                'rotation' : footprint.GetOrientationDegrees()
+                'rotation' : footprint.GetOrientationDegrees() + rotation
             })
+            # print('{}: X:{}, Y:{}, rot:{} ({})'.format(footprint.GetReference(), pcbnew.Iu2Millimeter(footprint.GetPosition().x), pcbnew.Iu2Millimeter(footprint.GetPosition().y), footprint.GetOrientationDegrees() + rotation, footprint.GetOrientationDegrees()))
 
             if package_name not in packages:
                 if int(footprint.GetOrientationDegrees()) != 0:
@@ -394,6 +396,7 @@ parser.add_argument('--read_only', help='Enable this option to disable updating 
 parser.add_argument('--parts_json', type=str, help='Location of parts.json', default='{}/parts.json'.format(get_script_directory()))
 parser.add_argument('--no_summary', help='Enabling this option will skip printing a parts summary after parsing', default=False, action='store_true')
 parser.add_argument('--rounding', help='This option defines how many decimal points should be kept when rounding', default=4)
+parser.add_argument('--rotation', help='This option defines the rotation (degrees) difference between KiCad and OpenPnP for the PCB', default=0)
 args = parser.parse_args()
 
 # Check for and load parts.json into the lookup tables used by the package and
@@ -466,10 +469,10 @@ if not args.read_only and not args.no_backup:
 packages_xml = '{}/packages.xml'.format(args.openpnp_config)
 parts_xml = '{}/parts.xml'.format(args.openpnp_config)
 
-packages, parts, placements = identity_used_packages_and_parts(board, args.ignore_top, args.ignore_bottom, args.use_value_for_part_id, args.use_mixedcase)
+packages, parts, placements = identity_used_packages_and_parts(board, args.ignore_top, args.ignore_bottom, args.use_value_for_part_id, args.use_mixedcase, int(args.rotation))
 update_packages_xml(packages, packages_xml, args.nozzle, args.read_only, backup_location)
 update_parts_xml(parts, parts_xml, args.read_only, backup_location)
-create_board_xml(placements, board_origin_x, board_origin_y, board_width, board_height, args.board, args.board_xml, args.rounding)
+create_board_xml(placements, board_origin_x, board_origin_y, board_width, board_height, args.board, args.board_xml, args.rounding, int(args.rotation))
 
 if not args.no_summary:
     print()
