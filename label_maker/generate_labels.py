@@ -160,10 +160,26 @@ def generate(startIndex = 0, templateFile = "default.json", partList = []):
     # delete old label images
     delete_labels()
 
+def parse_board_xml(xml_file):
+    # read the XML file
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+
+    # get all the placement part-ids  
+    xml_parts = []
+    for part in root.iter('placement'):
+        part_id = part.get('part-id')
+        xml_parts.append(part_id)
+
+    # filter out duplicate parts
+    unique_parts = list(dict.fromkeys(xml_parts))
+
+    return unique_parts
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--config', type=str, help='Label configuration file', default='default.json')
 parser.add_argument('-i', '--index', type=int, help='Starting index on the label sheet', default=0)
-parser.add_argument('-p', '--parts', type=str, help='Text file with each part on a new line', default='')
+parser.add_argument('-p', '--parts', type=str, help='board.xml file from KiCad Tools script, or text file with each part on a new line', default='')
 parser.add_argument('-f', '--fetch', default=False, help='Text file with each part on a new line', action='store_true')
 parser.add_argument('--parts_xml', type=str, help='Location of parts.xml', default='{}/.openpnp2/parts.xml'.format(Path.home()))
 args = parser.parse_args()
@@ -182,10 +198,15 @@ if args.fetch:
         partList.append(part_id)
 else:
     print('Reading parts list from: {}'.format(args.parts))
-    with open(args.parts, 'r') as file:
-        partList = file.read().splitlines()
+    if args.parts.endswith('.xml'):
+        print("Parsing XML file")
+        partList = parse_board_xml(args.parts)
+    else:
+        print("Parsing TXT file")
+        with open(args.parts, 'r') as file:
+            partList = file.read().splitlines()
 
-print('Generating labels for {} parts'.format(len(partList)))
+print('Generating labels for parts')
 
 generate(args.index, args.config, partList)
 
