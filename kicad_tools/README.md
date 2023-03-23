@@ -17,6 +17,9 @@ modify the [OpenPnP](www.openpnp.org) parts and packages definitions.
 > **Note**
 > OpenPnP should *NOT* be running when using this utility. If OpenPnP is running parts and package definitions may not preserved.
 
+> **Note**
+> If you see errors with missing KiCad python bindings, you may need to run this tool from with a KiCad Python shell.
+
 Complete usage is below:
 ```
 usage: kicad-to-openpnp-standalone.py [-h] --board BOARD --board_xml BOARD_XML [--openpnp_config OPENPNP_CONFIG] [--no_backup NO_BACKUP] [--use_mixedcase] [--use_value_for_part_id] [--nozzle NOZZLE] [--ignore_top] [--ignore_bottom]
