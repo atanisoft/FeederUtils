@@ -66,6 +66,11 @@ ignored_parts = []
 # NOTE: This is updated by loading parts.json at startup.
 package_as_part_id = []
 
+def to_millimeters(value):
+    if pcbnew.GetBuildVersion().startswith('7'):
+        return pcbnew.ToMM(value)
+    return pcbnew.Iu2Millimeter(value)
+
 def create_board_xml(placements, board_origin_x, board_origin_y, x_size, y_size, pcb_board_file, board_xml_file, decimal_places, rotation):
     # <openpnp-board version="1.1" name="{board name}">
     openpnp_board = ET.Element('openpnp-board', {
@@ -264,8 +269,8 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
             fp_value = str(footprint.GetValue())
             fp_ref = str(footprint.GetReference())
 
-            fp_x_mm = pcbnew.Iu2Millimeter(footprint.GetPosition().x)
-            fp_y_mm = pcbnew.Iu2Millimeter(footprint.GetPosition().y)
+            fp_x_mm = to_millimeters(footprint.GetPosition().x)
+            fp_y_mm = to_millimeters(footprint.GetPosition().y)
 
             # <placement version="1.4" id="U12" side="Top" part-id="74AHC1G08" type="Placement" enabled="true">
             #   <location units="Millimeters" x="193.98" y="-125.91" z="0.0" rotation="0.0"/>
@@ -298,33 +303,44 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
                 parts[part_name]['refs'].append(footprint.GetReference())
             parts[part_name]['refs'].sort()
 
-            placements.append({'id' : footprint.GetReference(),
-                'side' : 'Top' if footprint.GetLayer() == pcbnew.F_Cu else 'Bottom',
-                'part-id' : part_name,
-                'type' : placement_type,
-                'x' : pcbnew.Iu2Millimeter(footprint.GetPosition().x),
-                'y' : pcbnew.Iu2Millimeter(footprint.GetPosition().y),
-                'rotation' : footprint.GetOrientationDegrees() + rotation
-            })
-            # print('{}: X:{}, Y:{}, rot:{} ({})'.format(footprint.GetReference(), pcbnew.Iu2Millimeter(footprint.GetPosition().x), pcbnew.Iu2Millimeter(footprint.GetPosition().y), footprint.GetOrientationDegrees() + rotation, footprint.GetOrientationDegrees()))
+            if pcbnew.GetBuildVersion().startswith('7'):
+                placements.append({'id' : footprint.GetReference(),
+                    'side' : 'Top' if footprint.GetLayer() == pcbnew.F_Cu else 'Bottom',
+                    'part-id' : part_name,
+                    'type' : placement_type,
+                    'x' : to_millimeters(footprint.GetPosition().x),
+                    'y' : to_millimeters(footprint.GetPosition().y),
+                    'rotation' : footprint.GetOrientationDegrees() + rotation
+                })
+            else:
+                placements.append({'id' : footprint.GetReference(),
+                    'side' : 'Top' if footprint.GetLayer() == pcbnew.F_Cu else 'Bottom',
+                    'part-id' : part_name,
+                    'type' : placement_type,
+                    'x' : to_millimeters(footprint.GetPosition().x),
+                    'y' : to_millimeters(footprint.GetPosition().y),
+                    'rotation' : footprint.GetOrientationDegrees() + rotation
+                })
+
+            # print('{}: X:{}, Y:{}, rot:{} ({})'.format(footprint.GetReference(), to_millimeters(footprint.GetPosition().x), to_millimeters(footprint.GetPosition().y), footprint.GetOrientationDegrees() + rotation, footprint.GetOrientationDegrees()))
 
             if package_name not in packages:
                 if int(footprint.GetOrientationDegrees()) != 0:
                     # print('Part {} is rotated, correcting footprint orientation for import'.format(footprint.GetReference()))
-                    # print('Original orientation {} x:{}, y:{}'.format(footprint.GetOrientationDegrees(), pcbnew.Iu2Millimeter(footprint.GetPosition().x), pcbnew.Iu2Millimeter(footprint.GetPosition().y)))
+                    # print('Original orientation {} x:{}, y:{}'.format(footprint.GetOrientationDegrees(), to_millimeters(footprint.GetPosition().x), to_millimeters(footprint.GetPosition().y)))
                     footprint.Rotate(footprint.GetCenter(), footprint.GetOrientation() * -1.0 )
-                    # print('Corrected orientation {} x:{}, y:{}'.format(footprint.GetOrientationDegrees(), pcbnew.Iu2Millimeter(footprint.GetPosition().x), pcbnew.Iu2Millimeter(footprint.GetPosition().y)))
+                    # print('Corrected orientation {} x:{}, y:{}'.format(footprint.GetOrientationDegrees(), to_millimeters(footprint.GetPosition().x), to_millimeters(footprint.GetPosition().y)))
 
                 packages[package_name] = {}
                 for pad in footprint.Pads():
                     # Calculate the X/Y offset from the footprint in the PCB, this needs to be adjusted
                     # for the footprint position.
-                    fp_offs_x_mm = pcbnew.Iu2Millimeter(pad.GetPosition().x - footprint.GetPosition().x)
-                    fp_offs_y_mm = pcbnew.Iu2Millimeter(pad.GetPosition().y - footprint.GetPosition().y)
+                    fp_offs_x_mm = to_millimeters(pad.GetPosition().x - footprint.GetPosition().x)
+                    fp_offs_y_mm = to_millimeters(pad.GetPosition().y - footprint.GetPosition().y)
 
                     # Calculate the footprint pad size
-                    fp_size_w_mm = pcbnew.Iu2Millimeter(pad.GetSizeX())
-                    fp_size_h_mm = pcbnew.Iu2Millimeter(pad.GetSizeY())
+                    fp_size_w_mm = to_millimeters(pad.GetSizeX())
+                    fp_size_h_mm = to_millimeters(pad.GetSizeY())
 
                     # Determine the pad shape, the value from this method is PAD_SHAPE::{value}
                     # where {value} is: CIRCLE, RECT, OVAL, TRAPEZOID, ROUNDRECT, CHAMFERED_RECT, CUSTOM
@@ -336,7 +352,7 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
 
                     if pad.IsOnCopperLayer():
                         if pad_shape == 'ROUNDRECT':
-                            radius = pcbnew.Iu2Millimeter(pad.GetRoundRectCornerRadius());
+                            radius = to_millimeters(pad.GetRoundRectCornerRadius());
                             packages[package_name][pad_name] = {
                                 'w':fp_size_w_mm,
                                 'h':fp_size_h_mm,
@@ -347,7 +363,7 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
                             }
         #    Need to figure out how to translate this to OpenPnP
         #               elif pad_shape == 'CHAMFERED_RECT':
-        #                   radius = pcbnew.Iu2Millimeter(pad.GetChamferRectRatio());
+        #                   radius = to_millimeters(pad.GetChamferRectRatio());
         #                   packages[package_name][pad_name] = {
         #                       'w':fp_size_w_mm,
         #                       'h':fp_size_h_mm,
@@ -357,7 +373,7 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
         #                       'radius':radius
         #                   }
                         elif pad_shape == 'CIRCLE':
-                            radius = pcbnew.Iu2Millimeter(pad.GetBoundingRadius());
+                            radius = to_millimeters(pad.GetBoundingRadius());
                             packages[package_name][pad_name] = {
                                 'w':fp_size_w_mm,
                                 'h':fp_size_h_mm,
@@ -449,10 +465,10 @@ if board_origin.x == 0 and board_origin.y == 0:
     print('WARNING: board origin is not defined!')
     print('Without a board origin, part positions are very likely going to be inaccurate!')
 
-board_width = round(pcbnew.Iu2Millimeter(board_edges.GetWidth()), args.rounding)
-board_height = round(pcbnew.Iu2Millimeter(board_edges.GetHeight()), args.rounding)
-board_origin_x = pcbnew.Iu2Millimeter(board_origin.x)
-board_origin_y = pcbnew.Iu2Millimeter(board_origin.y)
+board_width = round(to_millimeters(board_edges.GetWidth()), args.rounding)
+board_height = round(to_millimeters(board_edges.GetHeight()), args.rounding)
+board_origin_x = to_millimeters(board_origin.x)
+board_origin_y = to_millimeters(board_origin.y)
 
 if args.use_mixedcase:
     print('Packages and parts may use mixed-case names')
