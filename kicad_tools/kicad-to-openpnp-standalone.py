@@ -40,6 +40,7 @@ import xml.etree.ElementTree as ET
 import json
 import shutil
 from datetime import datetime
+from packaging.version import Version, parse
 
 # Internal lookup table for mapping KiCad footprint names to OpenPnP Packages.
 #
@@ -67,7 +68,8 @@ ignored_parts = []
 package_as_part_id = []
 
 def to_millimeters(value):
-    if pcbnew.GetBuildVersion().startswith('7'):
+    kicad_version = pcbnew.GetMajorMinorVersion()
+    if parse(kicad_version).major >= 7:
         return pcbnew.ToMM(value)
     return pcbnew.Iu2Millimeter(value)
 
@@ -303,24 +305,14 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
                 parts[part_name]['refs'].append(footprint.GetReference())
             parts[part_name]['refs'].sort()
 
-            if pcbnew.GetBuildVersion().startswith('7'):
-                placements.append({'id' : footprint.GetReference(),
-                    'side' : 'Top' if footprint.GetLayer() == pcbnew.F_Cu else 'Bottom',
-                    'part-id' : part_name,
-                    'type' : placement_type,
-                    'x' : to_millimeters(footprint.GetPosition().x),
-                    'y' : to_millimeters(footprint.GetPosition().y),
-                    'rotation' : footprint.GetOrientationDegrees() + rotation
-                })
-            else:
-                placements.append({'id' : footprint.GetReference(),
-                    'side' : 'Top' if footprint.GetLayer() == pcbnew.F_Cu else 'Bottom',
-                    'part-id' : part_name,
-                    'type' : placement_type,
-                    'x' : to_millimeters(footprint.GetPosition().x),
-                    'y' : to_millimeters(footprint.GetPosition().y),
-                    'rotation' : footprint.GetOrientationDegrees() + rotation
-                })
+            placements.append({'id' : footprint.GetReference(),
+                'side' : 'Top' if footprint.GetLayer() == pcbnew.F_Cu else 'Bottom',
+                'part-id' : part_name,
+                'type' : placement_type,
+                'x' : to_millimeters(footprint.GetPosition().x),
+                'y' : to_millimeters(footprint.GetPosition().y),
+                'rotation' : footprint.GetOrientationDegrees() + rotation
+            })
 
             # print('{}: X:{}, Y:{}, rot:{} ({})'.format(footprint.GetReference(), to_millimeters(footprint.GetPosition().x), to_millimeters(footprint.GetPosition().y), footprint.GetOrientationDegrees() + rotation, footprint.GetOrientationDegrees()))
 
@@ -454,12 +446,7 @@ print('Loading {}'.format(args.board))
 
 board = pcbnew.LoadBoard(args.board)
 board_edges = board.GetBoardEdgesBoundingBox()
-
-# KiCad 6 moved the GetAuxOrigin method from the board to board design.
-if pcbnew.GetBuildVersion().startswith('5'):
-    board_origin = board.GetAuxOrigin()
-else:
-    board_origin = board.GetDesignSettings().GetAuxOrigin()
+board_origin = board.GetDesignSettings().GetAuxOrigin()
 
 if board_origin.x == 0 and board_origin.y == 0:
     print('WARNING: board origin is not defined!')
