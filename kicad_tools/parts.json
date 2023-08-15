@@ -170,6 +170,10 @@
         "alias": "R_Shunt_Vishay_WSKW0612"
     },
     {
+        "id": "R_SHUNT_WSK2512",
+        "alias": "R_Shunt_Vishay_WSK2512_6332Metric_T2.66mm"
+    },
+    {
         "id": "L_TAIYO_40XX",
         "alias": [
             "L_Taiyo-Yuden_NR-40xx_HandSoldering",
@@ -308,6 +312,10 @@
             "TSOT-23-6",
             "TSOT-23-6_HandSoldering"
         ]
+    },
+    {
+        "id": "D_MELF",
+        "alias": "D_MiniMELF"
     },
     {
         "id": "D_SMA",
@@ -504,6 +512,11 @@
         "alias": "MIC_CMEJ-0413-42-SMT-TR",
         "x_mm": 4.0,
         "y_mm": 4.0,
+        "use-package-as-part-id": true
+    },
+    {
+        "id": "MICROSD_104031-0811",
+        "alias": "microSD_HC_Molex_104031-0811",
         "use-package-as-part-id": true
     }
 ]
