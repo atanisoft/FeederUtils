@@ -25,10 +25,11 @@ modify the [OpenPnP](www.openpnp.org) parts and packages definitions.
 
 Complete usage is below:
 ```
-usage: kicad-to-openpnp-standalone.py [-h] --board BOARD --board_xml BOARD_XML [--openpnp_config OPENPNP_CONFIG] [--no_backup NO_BACKUP] [--use_mixedcase] [--use_value_for_part_id] [--nozzle NOZZLE] [--ignore_top] [--ignore_bottom]
-                                      [--read_only] [--parts_json PARTS_JSON] [--no_summary] [--rounding ROUNDING]
+usage: kicad-to-openpnp-standalone.py [-h] --board BOARD --board_xml BOARD_XML [--openpnp_config OPENPNP_CONFIG] [--no_backup NO_BACKUP]
+                                      [--use_mixedcase] [--use_value_for_part_id] [--nozzle NOZZLE] [--ignore_top] [--ignore_bottom]
+                                      [--read_only] [--parts_json PARTS_JSON] [--no_summary] [--rounding ROUNDING] [--rotation ROTATION]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --board BOARD         KiCad PCB to parse, foo.kicad_pcb
   --board_xml BOARD_XML
@@ -37,7 +38,8 @@ optional arguments:
                         Location of OpenPnP Configuration files
   --no_backup NO_BACKUP
                         Enabling this option will disable creation of backup copies of packages.xml and parts.xml
-  --use_mixedcase       Enabling this option will generate package names and part names using the values as-is from the PCB. When not enabled all names will be forced to upper case.
+  --use_mixedcase       Enabling this option will generate package names and part names using the values as-is from the PCB. When not
+                        enabled all names will be forced to upper case.
   --use_value_for_part_id
                         Enabling this option will use component Value from the KiCad PCB footprint as the OpenPnP part ID
   --nozzle NOZZLE       Default nozzle(s) to assign as compatible, can be specified more than once
@@ -48,7 +50,25 @@ optional arguments:
                         Location of parts.json
   --no_summary          Enabling this option will skip printing a parts summary after parsing
   --rounding ROUNDING   This option defines how many decimal points should be kept when rounding
+  --rotation ROTATION   This option defines the rotation (degrees) difference between KiCad and OpenPnP for the PCB
 ```
+#### Notes for usage on Windows
+
+Running this script on Windows will require a couple steps to be performed before you can successfully run this script.
+
+1. Locate your [KiCad](www.kicad.org) installation, typically `C:\Program Files\KiCad\{version}`.
+
+2. Open a command prompt as administrator and navigate to `C:\Program Files\KiCad\{version}\bin\Scripts`.
+
+3. Execute `pip install packaging` to install the packaging library.
+
+4. Change directories to where you have cloned / downloaded the `kicad-to-openpnp-standalone.py` and `parts.json` files.
+
+5. Execute `C:\Program Files\KiCad\{version}\bin\python.exe kicad-to-openpnp-standalone.py` to verify that everything is working correctly.
+
+6. Execute `C:\Program Files\KiCad\{version}\bin\python.exe kicad-to-openpnp-standalone.py --read_only --board {path to pcb.kicad_pcb} --board_xml {path to where pcb.board.xml should be generated}`. This will confirm that the OpenPnP configuration directory path was correctly located, if not use `--openpnp_config` to provide the correct path.
+
+7. Execute the same command as used in the previous step without `--read_only` to have the script update your OpenPnP configuration files.
 
 ### Packages and Parts mappping
 
