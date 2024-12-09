@@ -166,11 +166,11 @@
         "z_mm": 0.35
     },
     {
-        "id": "R_SHUNT_WSKW0612",
+        "id": "R_WSKW0612",
         "alias": "R_Shunt_Vishay_WSKW0612"
     },
     {
-        "id": "R_SHUNT_WSK2512",
+        "id": "R_WSK2512",
         "alias": "R_Shunt_Vishay_WSK2512_6332Metric_T2.66mm"
     },
     {
@@ -190,8 +190,17 @@
         "y_mm": 1.6
     },
     {
+        "id": "SOT723",
+        "alias": [
+            "SOT-723"
+        ]
+    },
+    {
         "id": "SOT223",
-        "alias": "SOT-223-3_TabPin2"
+        "alias": [
+            "SOT-223",
+            "SOT-223-3_TabPin2"
+        ]
     },
     {
         "id": "SOT353",
@@ -201,11 +210,11 @@
         ]
     },
     {
-        "id": "QFN28_6x6MM",
+        "id": "QFN28",
         "alias": "QFN-28-1EP_6x6mm_P0.65mm_EP4.25x4.25mm"
     },
     {
-        "id": "TSSOP28_4.4X9.7MM",
+        "id": "TSSOP28",
         "alias": [
             "TSSOP-28_4.4x9.7mm_P0.65mm",
             "TSSOP-28-1EP_4.4x9.7mm_P0.65mm",
@@ -246,13 +255,13 @@
         "y_mm": 4.4
     },
     {
-        "id": "SO8_3.9X4.9MM",
+        "id": "SO8",
         "alias": "SO-8_3.9x4.9mm_P1.27mm",
         "x_mm": 4.9,
         "y_mm": 3.9
     },
     {
-        "id": "SOIC8_3.9X4.9MM",
+        "id": "SOIC8",
         "alias": [
             "SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.29x3mm",
             "SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.514x3.2mm_ThermalVias",
@@ -272,12 +281,30 @@
         "y_mm": 3.9
     },
     {
-        "id": "SOIC14_3.9X8.7MM",
+        "id": "SOIC14",
         "alias": [
             "SOIC-14_3.9x8.7mm_P1.27mm"
         ],
         "x_mm": 8.7,
         "y_mm": 3.9
+    },
+    {
+        "id": "SOT23",
+        "alias": [
+            "SOT-23"
+        ]
+    },
+    {
+        "id": "SOT23_6",
+        "alias": [
+	    "SOT-23-6"
+        ]
+    },
+    {
+    	"id": "SOT223",
+	"alias": [
+	    "SOT-223-3_TabPin2"
+	]
     },
     {
         "id": "TO252_2",
@@ -322,6 +349,18 @@
         "alias": [
             "D_SMA",
             "D_SMA_Handsoldering"
+        ]
+    },
+    {
+        "id": "D_SOD123",
+        "alias": [
+            "D_SOD-123"
+        ]
+    },
+    {
+        "id": "D_SOD323",
+        "alias": [
+            "D_SOD-323"
         ]
     },
     {
@@ -518,5 +557,31 @@
         "id": "MICROSD_104031-0811",
         "alias": "microSD_HC_Molex_104031-0811",
         "use-package-as-part-id": true
+    },
+    {
+        "id": "GCT_USB4105",
+        "alias": "USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal",
+        "use-package-as-part-id": true
+    },
+    {
+        "id" :"LED_APA1606",
+	"alias" : "LED_Kingbright_APA1606_1.6x0.6mm_Horizontal",
+        "use-package-as-part-id": true
+    },
+    {
+        "id": "FPC18_0.5",
+	"alias": "TE_1-1734839-8_1x18-1MP_P0.5mm_Horizontal"
+    },
+    {
+        "id": "FPC50_0.5",
+        "alias": "TE_5-1734839-0_1x50-1MP_P0.5mm_Horizontal"
+    },
+    {
+        "id": "WQFN24",
+        "alias": "WQFN-24-1EP_4x4mm_P0.5mm_EP2.45x2.45mm"
+    },
+    {
+        "id": "VSSOP10",
+        "alias": "VSSOP-10_3x3mm_P0.5mm"
     }
 ]

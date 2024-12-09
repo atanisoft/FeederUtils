@@ -239,7 +239,7 @@ def update_packages_xml(packages, packages_xml_file, usable_nozzles, is_read_onl
     else:
         print('All packages have been found, no update of {} required'.format(packages_xml_file))
 
-def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value_for_part_id, use_mixedcase, rotation):
+def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value_for_part_id, use_mixedcase, rotation, include_testpoints):
     packages = {}
     parts = {}
     placements = []
@@ -254,6 +254,9 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
         if includeFootprint:
             package_name = str(footprint.GetFPID().GetLibItemName())
             if package_name.upper() in ignored_parts:
+                print('Ignoring part {} ({})'.format(footprint.GetReference(), package_name))
+                continue
+            if 'TESTPOINT' in package_name.upper() and not include_testpoints:
                 print('Ignoring part {} ({})'.format(footprint.GetReference(), package_name))
                 continue
             if 'SMD' not in footprint.GetTypeName():
@@ -342,6 +345,12 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
                     if 'FIDUCIAL' in package_name.upper() and pad_name == '':
                         pad_name = '1'
 
+                    # Catch and de-dupe pad names
+                    if pad_name in packages[package_name]:
+                        new_pad_name = "{}_{}".format(pad_name, len(packages[package_name]))
+                        print('WARNING: pad \'{}\' is not unique in \'{}\'! Using \'{}\' for pad name'.format(pad_name, package_name, new_pad_name))
+                        pad_name = new_pad_name
+
                     if pad.IsOnCopperLayer():
                         if pad_shape == 'ROUNDRECT':
                             radius = to_millimeters(pad.GetRoundRectCornerRadius());
@@ -405,6 +414,7 @@ parser.add_argument('--parts_json', type=str, help='Location of parts.json', def
 parser.add_argument('--no_summary', help='Enabling this option will skip printing a parts summary after parsing', default=False, action='store_true')
 parser.add_argument('--rounding', help='This option defines how many decimal points should be kept when rounding', default=4)
 parser.add_argument('--rotation', help='This option defines the rotation (degrees) difference between KiCad and OpenPnP for the PCB', default=0)
+parser.add_argument('--include_testpoints', help='Enabling this option will enable inclusion of test point footprints', default=False)
 args = parser.parse_args()
 
 # Check for and load parts.json into the lookup tables used by the package and
@@ -472,7 +482,7 @@ if not args.read_only and not args.no_backup:
 packages_xml = '{}/packages.xml'.format(args.openpnp_config)
 parts_xml = '{}/parts.xml'.format(args.openpnp_config)
 
-packages, parts, placements = identity_used_packages_and_parts(board, args.ignore_top, args.ignore_bottom, args.use_value_for_part_id, args.use_mixedcase, int(args.rotation))
+packages, parts, placements = identity_used_packages_and_parts(board, args.ignore_top, args.ignore_bottom, args.use_value_for_part_id, args.use_mixedcase, int(args.rotation), args.include_testpoints)
 update_packages_xml(packages, packages_xml, args.nozzle, args.read_only, backup_location)
 update_parts_xml(parts, parts_xml, args.read_only, backup_location)
 create_board_xml(placements, board_origin_x, board_origin_y, board_width, board_height, args.board, args.board_xml, args.rounding, int(args.rotation))
