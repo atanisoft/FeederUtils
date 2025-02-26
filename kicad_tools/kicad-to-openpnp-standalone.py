@@ -116,7 +116,7 @@ def create_board_xml(placements, board_origin_x, board_origin_y, x_size, y_size,
         ET.indent(openpnp_board)
     ET.ElementTree(openpnp_board).write(board_xml_file)
 
-def update_parts_xml(parts, parts_xml_file, is_read_only, backup_location):
+def update_parts_xml(parts, parts_xml_file, is_read_only, backup_location, package_heights):
     parts_xml = ET.parse(parts_xml_file)
     parts_root = parts_xml.getroot()
     # Process all unique packages and cross check against packages.xml
@@ -126,12 +126,14 @@ def update_parts_xml(parts, parts_xml_file, is_read_only, backup_location):
         if len(parts_xml.findall(".//part[@id='{}']".format(part))) == 0:
             print('Part {} not found, creating'.format(part))
             new_parts_added = True
+            package = parts[part]['package']
+            #print('Part {} / {} height {}'.format(part, package, package_heights[package] if package in package_heights else '0.0'))
             ET.SubElement(parts_root, 'part', {
                 'id' : part,
                 'name' : part,
                 'height-units' : 'Millimeters',
-                'height' : part_height_mapping[parts[part]['package']] if part in part_height_mapping else '0.0',
-                'package-id' : parts[part]['package'],
+                'height' : package_heights[package] if package in package_heights else '0.0',
+                'package-id' : package,
                 'speed' : '1.0',
                 'pick-retry-count' : '0'
             })
@@ -239,7 +241,7 @@ def update_packages_xml(packages, packages_xml_file, usable_nozzles, is_read_onl
     else:
         print('All packages have been found, no update of {} required'.format(packages_xml_file))
 
-def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value_for_part_id, use_mixedcase, rotation, include_testpoints):
+def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value_for_part_id, use_mixedcase, rotation, include_testpoints, discard_duplicate_pads):
     packages = {}
     parts = {}
     placements = []
@@ -264,6 +266,9 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
             if ignore_top and footprint.GetLayer() == pcbnew.F_Cu:
                 continue
             elif ignore_bottom and footprint.GetLayer() == pcbnew.B_Cu:
+                continue
+            if footprint.IsDNP():
+                print('Ignoring part {} as it is marked DNP'.format(footprint.GetReference()))
                 continue
 
             # check if we have a mapping for the footprint name
@@ -347,9 +352,10 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
 
                     # Catch and de-dupe pad names
                     if pad_name in packages[package_name]:
-                        new_pad_name = "{}_{}".format(pad_name, len(packages[package_name]))
-                        print('WARNING: pad \'{}\' is not unique in \'{}\'! Using \'{}\' for pad name'.format(pad_name, package_name, new_pad_name))
-                        pad_name = new_pad_name
+                        if not discard_duplicate_pads:
+                            new_pad_name = "{}_{}".format(pad_name, len(packages[package_name]))
+                            print('WARNING: pad \'{}\' is not unique in \'{}\'! Using \'{}\' for pad name, ref \'{}\''.format(pad_name, package_name, new_pad_name, footprint.GetReference()))
+                            pad_name = new_pad_name
 
                     if pad.IsOnCopperLayer():
                         if pad_shape == 'ROUNDRECT':
@@ -415,6 +421,7 @@ parser.add_argument('--no_summary', help='Enabling this option will skip printin
 parser.add_argument('--rounding', help='This option defines how many decimal points should be kept when rounding', default=4)
 parser.add_argument('--rotation', help='This option defines the rotation (degrees) difference between KiCad and OpenPnP for the PCB', default=0)
 parser.add_argument('--include_testpoints', help='Enabling this option will enable inclusion of test point footprints', default=False)
+parser.add_argument('--discard_duplicate_pads', help='Enabling this option will discard duplicate pads rather than rename them', default=False, action='store_true')
 args = parser.parse_args()
 
 # Check for and load parts.json into the lookup tables used by the package and
@@ -431,6 +438,7 @@ if os.path.exists(args.parts_json):
                         footprint_to_package_mapping[alias.upper()] = part['id']
             if 'z_mm' in part and part['z_mm']:
                 part_height_mapping[part['id']] = str(part['z_mm'])
+                #print('Recording height {} for {}'.format(part['id'], part['z_mm']))
             if 'x_mm' in part and part['x_mm'] and 'y_mm' in part and part['y_mm']:
                 package_size_mapping[part['id']] = {
                     'h' : str(part['x_mm']),
@@ -482,9 +490,9 @@ if not args.read_only and not args.no_backup:
 packages_xml = '{}/packages.xml'.format(args.openpnp_config)
 parts_xml = '{}/parts.xml'.format(args.openpnp_config)
 
-packages, parts, placements = identity_used_packages_and_parts(board, args.ignore_top, args.ignore_bottom, args.use_value_for_part_id, args.use_mixedcase, int(args.rotation), args.include_testpoints)
+packages, parts, placements = identity_used_packages_and_parts(board, args.ignore_top, args.ignore_bottom, args.use_value_for_part_id, args.use_mixedcase, int(args.rotation), args.include_testpoints, args.discard_duplicate_pads)
 update_packages_xml(packages, packages_xml, args.nozzle, args.read_only, backup_location)
-update_parts_xml(parts, parts_xml, args.read_only, backup_location)
+update_parts_xml(parts, parts_xml, args.read_only, backup_location, part_height_mapping)
 create_board_xml(placements, board_origin_x, board_origin_y, board_width, board_height, args.board, args.board_xml, args.rounding, int(args.rotation))
 
 if not args.no_summary:

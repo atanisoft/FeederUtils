@@ -118,7 +118,7 @@
         ],
         "x_mm": 0.8,
         "y_mm": 1.6,
-        "z_mm": 0.45
+        "z_mm": 0.5
     },
     {
         "id": "R_0805",
@@ -128,7 +128,7 @@
         ],
         "x_mm": 1.2,
         "y_mm": 2.0,
-        "z_mm": 0.45
+        "z_mm": 0.5
     },
     {
         "id": "R_1206",
@@ -138,7 +138,7 @@
         ],
         "x_mm": 1.6,
         "y_mm": 3.2,
-        "z_mm": 0.55
+        "z_mm": 0.6
     },
     {
         "id": "R_1210",
@@ -148,7 +148,7 @@
         ],
         "x_mm": 2.5,
         "y_mm": 3.2,
-        "z_mm": 0.55
+        "z_mm": 0.6
     },
     {
         "id": "R_2512",
@@ -158,7 +158,7 @@
         ],
         "x_mm": 3.2,
         "y_mm": 6.3,
-        "z_mm": 0.55
+        "z_mm": 0.65
     },
     {
         "id": "R_4X0402",
@@ -278,7 +278,8 @@
             "SOIC-8_3.9x4.9mm_P1.27mm"
         ],
         "x_mm": 4.9,
-        "y_mm": 3.9
+        "y_mm": 3.9,
+        "z_mm": 1.8
     },
     {
         "id": "SOIC14",
@@ -292,19 +293,21 @@
         "id": "SOT23",
         "alias": [
             "SOT-23"
-        ]
+        ],
+        "z_mm": 1.2
     },
     {
         "id": "SOT23_6",
         "alias": [
-	    "SOT-23-6"
-        ]
+	        "SOT-23-6"
+        ],
+        "z_mm": 1.8
     },
     {
     	"id": "SOT223",
-	"alias": [
-	    "SOT-223-3_TabPin2"
-	]
+        "alias": [
+            "SOT-223-3_TabPin2"
+        ]
     },
     {
         "id": "TO252_2",
@@ -399,7 +402,8 @@
             "Fuse_1812_4532Metric_Pad1.30x3.40mm_HandSolder"
         ],
         "x_mm": 3.2,
-        "y_mm": 4.5
+        "y_mm": 4.5,
+        "z_mm": 0.6
     },
     {
         "id": "FUSE_2920",
@@ -408,7 +412,8 @@
             "Fuse_2920_7451Metric_Pad2.10x5.45mm_HandSolder"
         ],
         "x_mm": 5.1,
-        "y_mm": 7.4
+        "y_mm": 7.4,
+        "z_mm": 1.0
     },
     {
         "id": "SW_EVQPE1",
@@ -423,7 +428,8 @@
         "id": "SOLDER_JUMPER",
         "alias": [
             "SolderJumper-2_P1.3mm_Bridged_RoundedPad1.0x1.5mm",
-            "SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+            "SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm",
+            "SolderJumper-3_P1.3mm_Bridged2Bar12_Pad1.0x1.5mm"
         ],
         "ignore": true
     },
@@ -439,8 +445,12 @@
     },
     {
         "id" : "USB4105",
-        "alias": "GCT_USB4105-GF-A",
-        "use-package-as-part-id": true
+        "alias": [
+            "GCT_USB4105-GF-A",
+            "USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal"
+        ],
+        "use-package-as-part-id": true,
+        "z_mm": 3.5
     },
     {
         "id": "ESP32_DEVKIT",
@@ -559,18 +569,14 @@
         "use-package-as-part-id": true
     },
     {
-        "id": "GCT_USB4105",
-        "alias": "USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal",
-        "use-package-as-part-id": true
-    },
-    {
         "id" :"LED_APA1606",
-	"alias" : "LED_Kingbright_APA1606_1.6x0.6mm_Horizontal",
-        "use-package-as-part-id": true
+	    "alias" : "LED_Kingbright_APA1606_1.6x0.6mm_Horizontal",
+        "z_mm": 0.65
     },
     {
         "id": "FPC18_0.5",
-	"alias": "TE_1-1734839-8_1x18-1MP_P0.5mm_Horizontal"
+	    "alias": "TE_1-1734839-8_1x18-1MP_P0.5mm_Horizontal",
+        "z_mm": 2.1
     },
     {
         "id": "FPC50_0.5",
@@ -583,5 +589,21 @@
     {
         "id": "VSSOP10",
         "alias": "VSSOP-10_3x3mm_P0.5mm"
+    },
+    {
+        "id": "JSTPH1x04",
+        "alias": "JST_PH_S4B-PH-SM4-TB_1x04-1MP_P2.00mm_Horizontal"
+    },
+    {
+        "id": "LED_PLCC6",
+        "alias": "LED_Cree-PLCC6_4.7x1.5mm"
+    },
+    {
+        "id": "EXPOSED_COPPER",
+        "alias": [
+            "6mm_round",
+            "4x6mm_square"
+        ],
+        "ignore": true
     }
 ]
