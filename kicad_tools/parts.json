@@ -595,6 +595,14 @@
         "alias": "JST_PH_S4B-PH-SM4-TB_1x04-1MP_P2.00mm_Horizontal"
     },
     {
+        "id": "JSTPH1x02",
+        "alias": "JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal"
+    },
+    {
+        "id": "PICOBLADE1x04",
+        "alias": "Molex_PicoBlade_53261-0471_1x04-1MP_P1.25mm_Horizontal"
+    },
+    {
         "id": "LED_PLCC6",
         "alias": "LED_Cree-PLCC6_4.7x1.5mm"
     },

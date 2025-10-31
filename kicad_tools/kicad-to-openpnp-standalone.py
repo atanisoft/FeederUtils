@@ -184,7 +184,7 @@ def update_packages_xml(packages, packages_xml_file, usable_nozzles, is_read_onl
             for pad in packages[package]:
                 values = packages[package][pad]
                 # <pad name="1" x="0.0" y="0.0" width="0.5" height="0.5" rotation="0.0" roundness="100.0"/>
-                if values['shape'] == 'CIRCLE':
+                if values['shape'] == pcbnew.PAD_SHAPE_CIRCLE:
                     if 'FIDUCIAL' in pad.upper():
                         ET.SubElement(footprint_elem, 'pad', {
                             'name':pad,
@@ -206,7 +206,7 @@ def update_packages_xml(packages, packages_xml_file, usable_nozzles, is_read_onl
                             'rotation':'0.0',
                             'roundness':'100.0'
                         })
-                elif values['shape'] == 'ROUNDRECT':
+                elif values['shape'] == pcbnew.PAD_SHAPE_ROUNDRECT:
                     ET.SubElement(footprint_elem, 'pad', {
                         'name':pad,
                         'x':str(values['x']),
@@ -344,7 +344,7 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
 
                     # Determine the pad shape, the value from this method is PAD_SHAPE::{value}
                     # where {value} is: CIRCLE, RECT, OVAL, TRAPEZOID, ROUNDRECT, CHAMFERED_RECT, CUSTOM
-                    pad_shape = pcbnew.PAD_SHAPE_T_asString(pad.GetShape()).split('::')[1]
+                    pad_shape = pad.GetShape(footprint.GetLayer())
 
                     pad_name = str(pad.GetName())
                     if 'FIDUCIAL' in package_name.upper() and pad_name == '':
@@ -358,7 +358,7 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
                             pad_name = new_pad_name
 
                     if pad.IsOnCopperLayer():
-                        if pad_shape == 'ROUNDRECT':
+                        if pad_shape == pcbnew.PAD_SHAPE_ROUNDRECT:
                             radius = to_millimeters(pad.GetRoundRectCornerRadius());
                             packages[package_name][pad_name] = {
                                 'w':fp_size_w_mm,
@@ -369,7 +369,7 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
                                 'radius':radius
                             }
         #    Need to figure out how to translate this to OpenPnP
-        #               elif pad_shape == 'CHAMFERED_RECT':
+        #               elif pad_shape == pcbnew.PAD_SHAPE_CHAMFERED_RECT:
         #                   radius = to_millimeters(pad.GetChamferRectRatio());
         #                   packages[package_name][pad_name] = {
         #                       'w':fp_size_w_mm,
@@ -379,7 +379,7 @@ def identity_used_packages_and_parts(board, ignore_top, ignore_bottom, use_value
         #                       'shape':pad_shape,
         #                       'radius':radius
         #                   }
-                        elif pad_shape == 'CIRCLE':
+                        elif pad_shape == pcbnew.PAD_SHAPE_CIRCLE:
                             radius = to_millimeters(pad.GetBoundingRadius());
                             packages[package_name][pad_name] = {
                                 'w':fp_size_w_mm,
