@@ -613,5 +613,10 @@
             "4x6mm_square"
         ],
         "ignore": true
+    },
+    {
+        "id":"Molex_PicoBlade_53261-0471_1x04-1MP_P1.25mm_Horizontal",
+        "alias":"PICOBLADE_1x04",
+        "use-package-as-part-id": true
     }
 ]
