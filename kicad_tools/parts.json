@@ -592,15 +592,18 @@
     },
     {
         "id": "JSTPH1x04",
-        "alias": "JST_PH_S4B-PH-SM4-TB_1x04-1MP_P2.00mm_Horizontal"
+        "alias": "JST_PH_S4B-PH-SM4-TB_1x04-1MP_P2.00mm_Horizontal",
+        "use-package-as-part-id": true
     },
     {
         "id": "JSTPH1x02",
-        "alias": "JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal"
+        "alias": "JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal",
+        "use-package-as-part-id": true
     },
     {
         "id": "PICOBLADE1x04",
-        "alias": "Molex_PicoBlade_53261-0471_1x04-1MP_P1.25mm_Horizontal"
+        "alias": "Molex_PicoBlade_53261-0471_1x04-1MP_P1.25mm_Horizontal",
+        "use-package-as-part-id": true
     },
     {
         "id": "LED_PLCC6",
@@ -613,10 +616,5 @@
             "4x6mm_square"
         ],
         "ignore": true
-    },
-    {
-        "id":"Molex_PicoBlade_53261-0471_1x04-1MP_P1.25mm_Horizontal",
-        "alias":"PICOBLADE_1x04",
-        "use-package-as-part-id": true
     }
 ]
